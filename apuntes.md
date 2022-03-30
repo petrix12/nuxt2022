@@ -162,41 +162,374 @@
 + **Contenido**: sobre como administra las rutas (name, path, component) Nuxt.js.
 
 ### 18. Carpeta Páginas
-1. Modificar **my-app\pages\index.vue**:
+1. Modificar vista **my-app\pages\index.vue**:
     ```vue
+    <template>
+        <div class="container">
+            <h1>Index</h1>
+        </div>
+    </template>
     ```
-2. mmm
-
-
-
+2. Crear vista **my-app\pages\users\index.vue**:
     ```vue
+    <template>
+        <div class="container">
+            <h1>Index User</h1>
+        </div>
+    </template>
     ```
-
-
+    + **Nota**: para acceder a la vista: http://localhost:3000/users
+3. Crear vista **my-app\pages\users\one.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>One</h1>
+        </div>
+    </template>
+    ```
+    + **Nota**: para acceder a la vista: http://localhost:3000/users/one
+4. Crear vista **my-app\pages\contacto.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Contacto</h1>
+        </div>
+    </template>
+    ```
+    + **Nota**: para acceder a la vista: http://localhost:3000/contacto
 
 ### 19. Nuxt-link
-3 min
-### 20. Navegación por métodos
-2 min
-### 21. Rutas dinámicas teoría
-1 min
-### 22. Rutas dinámicas práctica
-4 min
-### 23. Nuxt link rutas dinámicas
-4 min
-### 24. Nuxt link rutas dinámicas parte 2
-4 min
-### 25. Navegación por métodos con parámetros
-2 min
-### 26. Nuxt validate
-3 min
-### 27. Páginas anidadas
-3 min
+1. Modificar vista **my-app\pages\index.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Index</h1>
+            <div>
+                <!-- Navegación por path -->
+                <p>Navegación por path</p>
+                <nuxt-link to='/users'>Users</nuxt-link>
+                <nuxt-link to='/users/one'>One</nuxt-link>
+                <nuxt-link to='/contacto'>Contacto</nuxt-link>
+                <!-- Navegación por name -->
+                <p>Navegación por name</p>
+                <nuxt-link :to="{name: 'users'}">Users</nuxt-link>
+                <nuxt-link :to="{name: 'users-one'}">One</nuxt-link>
+                <nuxt-link :to="{name: 'contacto'}">Contacto</nuxt-link>
+            </div>
+        </div>
+    </template>
+    ```
 
+### 20. Navegación por métodos
+1. Modificar vista **my-app\pages\index.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Index</h1>
+            <div>
+                <!-- Navegación por path -->
+                <p>Navegación por path</p>
+                <nuxt-link to='/users'>Users</nuxt-link>
+                <nuxt-link to='/users/one'>One</nuxt-link>
+                <nuxt-link to='/contacto'>Contacto</nuxt-link>
+                <!-- Navegación por name -->
+                <p>Navegación por name</p>
+                <nuxt-link :to="{name: 'users'}">Users</nuxt-link>
+                <nuxt-link :to="{name: 'users-one'}">One</nuxt-link>
+                <nuxt-link :to="{name: 'contacto'}">Contacto</nuxt-link>
+            </div>
+            <!-- Navegación por métodos -->
+            <div>
+                <button @click="goto()">Users</button>
+                <button @click="gotoObjeto()">One</button>
+                <button @click="gotoObjetoParametro({name: 'contacto'})">Contacto</button>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        methods: {
+            goto() {
+                this.$router.push('/users')
+            },
+            gotoObjeto() {
+                this.$router.push({name: 'users-one'})
+            },
+            gotoObjetoParametro(parametro) {
+                this.$router.push(parametro)
+            }
+        }
+    }
+    </script>
+    ```
+
+### 21. Rutas dinámicas teoría
++ **Contenido**: sobre rutas dinámicas.
+
+### 22. Rutas dinámicas práctica
+1. Renombrar vista **my-app\pages\users\index.vue** a **my-app\pages\users\\_id.vue**.
+2. Modificar vista **my-app\pages\users\\_id.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Index User</h1>
+            <p>{{ $route.params }}</p>
+            <p>{{ $route.params.id }}</p>
+        </div>
+    </template>
+    ```
+3. Crear vista **my-app\pages\\_products\index.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1>Productos {{ $route.params.products }}</h1>
+        </div>
+    </template>
+    ```
+4. Crear vista **my-app\pages\\_products\list.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1>Lista de {{ $route.params.products }}</h1>
+            <ul>
+                <li>item</li>
+                <li>item</li>
+                <li>item</li>
+                <li>item</li>
+                <li>item</li>
+            </ul>
+        </div>
+    </template>
+    ```
+5. Para probar la vista anterior, en el navegador ir a:
+    + http://localhost:3000/productos/list
+
+### 23. Nuxt link rutas dinámicas
+1. Modificar vista **my-app\pages\index.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Index</h1>
+            <!-- NAVEGACIÓN ESTÁTICA -->
+            <div>
+                <!-- Navegación por path -->
+                <hr>
+                <p>Navegación por path</p>
+                <nuxt-link to='/users'>Users</nuxt-link>
+                <nuxt-link to='/users/one'>One</nuxt-link>
+                <nuxt-link to='/contacto'>Contacto</nuxt-link>
+
+                <!-- Navegación por name -->
+                <hr>
+                <p>Navegación por name</p>
+                <nuxt-link :to="{name: 'users'}">Users</nuxt-link>
+                <nuxt-link :to="{name: 'users-one'}">One</nuxt-link>
+                <nuxt-link :to="{name: 'contacto'}">Contacto</nuxt-link>
+            </div>
+
+            <!-- Navegación por métodos -->
+            <hr>
+            <p>Navegación por métodos</p>
+            <div>
+                <button @click="goto()">Users</button>
+                <button @click="gotoObjeto()">One</button>
+                <button @click="gotoObjetoParametro({name: 'contacto'})">Contacto</button>
+            </div>
+
+            <!-- NAVEGACIÓN DINÁMICA -->
+
+            <!-- Navegación de lista de usuario por path -->
+            <hr>
+            <p>Navegación de lista de usuario por path</p>
+            <div>
+                <ul>
+                    <li v-for="user in users" :key="user.id">
+                        <nuxt-link :to="`users/${user.id}`">{{ user.name }}</nuxt-link>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Navegación de lista de usuario por name -->
+            <hr>
+            <p>Navegación de lista de usuario por name</p>
+            <div>
+                <ul>
+                    <li v-for="user in users" :key="user.id">
+                        <nuxt-link :to="{name: 'users-id', params: {id: user.id}}">{{ user.name }}</nuxt-link>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return {
+                users: [
+                    { name: 'Leticia', id: 1 },
+                    { name: 'Isabel', id: 2 },
+                    { name: 'María', id: 3 },
+                    { name: 'Rebeca', id: 4 }
+                ]
+            }
+        },
+        methods: {
+            goto() {
+                this.$router.push('/users')
+            },
+            gotoObjeto() {
+                this.$router.push({name: 'users-one'})
+            },
+            gotoObjetoParametro(parametro) {
+                this.$router.push(parametro)
+            }
+        }
+    }
+    </script>
+    ```
+
+### 24. Nuxt link rutas dinámicas parte 2
+1. Modificar vista **my-app\pages\index.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            ≡
+            <!-- Navegación de lista de usuario por path -->
+            <hr>
+            <p>Navegación de lista de usuario por path</p>
+            <div>
+                <ul>
+                    <li v-for="product in products" :key="'product-' + product.id">
+                        <nuxt-link :to="`/${product.categoria}`">{{ product.categoria }}</nuxt-link>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return {
+                ≡
+                products: [
+                    { categoria: 'Carros', id: 1 },
+                    { categoria: 'Motos', id: 2 }
+                ]
+            }
+        },
+        methods: {
+            ≡
+        }
+    }
+    </script>
+    ```
+2. Modificar vista **my-app\pages\\_products\index.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1>Productos</h1>
+            <p>
+                <nuxt-link :to="`/${$route.params.products}/list`">Ver lista de {{ $route.params.products }}</nuxt-link>
+            </p>
+        </div>
+    </template>
+    ```
+
+### 25. Navegación por métodos con parámetros
+1. Modificar **my-app\pages\\_products\index.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1>Productos</h1>
+            <p>
+                <nuxt-link :to="`/${$route.params.products}/list`">Ver lista de {{ $route.params.products }}</nuxt-link>
+            </p>
+            <button @click="goto()">Ir a ver {{ $route.params.products }}</button>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        methods: {
+            goto(){
+                this.$router.push(this.$route.params.products + '/list')
+            }
+        }
+    }
+    </script>
+    ```
+
+### 26. Nuxt validate
+1. Modificar vista **my-app\pages\users\\_id.vue**:
+    ```vue
+    ≡
+    <script>
+    export default {
+        validate(ruta){
+            console.log(ruta)
+            /* return true */
+            /* return ruta.params.id == 2 */
+            // Con expresión regular para validar que sea un número
+            return /^\d+$/.test(ruta.params.id)
+        }
+    }
+    </script>
+    ```
+
+### 27. Páginas anidadas
+1. Crear vista **my-app\pages\users.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1>Usuarios principales!!!</h1>
+            <div>
+                <ul>
+                    <li v-for="user in users" :key="user.id">
+                        <nuxt-link :to="{name: 'users-id', params: {id: user.id}}">{{ user.name }}</nuxt-link>
+                    </li>
+                </ul>
+            </div>
+            <nuxt-child />
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return {
+                users: [
+                    { name: 'Leticia', id: 1 },
+                    { name: 'Isabel', id: 2 },
+                    { name: 'María', id: 3 },
+                    { name: 'Rebeca', id: 4 }
+                ]
+            }
+        }
+    }
+    </script>
+    ```
 
 ## Sección 3: Layouts, páginas y componentes
 ### 28. Sitios web visitados en la sección
 1 min
+
+
+
+
+
+
+    ```vue
+    ≡
+    ≡
+    ```
+
+
+
+
+
 ### 29. Layouts, páginas y componentes
 1 min
 ### 30. Carpeta layout
@@ -219,6 +552,9 @@
 5 min
 ### 39. Archivos del proyecto sección 3
 1 min
+
+
+## Sección 4: Strapi GraphQL
 ### 40. Sitios web visitados en la sección
 1 min
 ### 41. introducción a GraphQL
