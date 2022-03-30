@@ -514,10 +514,434 @@
 
 ## Sección 3: Layouts, páginas y componentes
 ### 28. Sitios web visitados en la sección
+1. Sitios web de interes:
+    + https://fonts.google.com/specimen/Noto+Sans+JP?query=noto
+    + https://developers.google.com/fonts/docs/css2
+
+### 29. Layouts, páginas y componentes
++ **Contenido**: sobre layouts, páginas y componentes en Nuxt.js.
+
+### 30. Carpeta layout
+1. Modificar layout **my-app\layouts\default.vue**:
+    ```vue
+    <template>
+        <div>
+            <div>
+                <ul>
+                    <li v-for="ruta in rutas" :key="ruta.label">
+                        <nuxt-link :to="ruta.ruta">{{ ruta.label }}</nuxt-link>
+                    </li>
+                </ul>
+            </div>
+            <Nuxt/>
+            <footer>
+                <div>
+                    &copy; 2021 
+                </div>
+            </footer>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return {
+                rutas: [
+                    { ruta: '/', label: 'Inicio' },
+                    { ruta: '/users/1', label: 'Usuarios' },
+                    { ruta: '/carros', label: 'Carros' },
+                    { ruta: '/motos', label: 'Motos' },
+                    { ruta: '/contacto', label: 'Contacto' }
+                ]
+            }
+        }
+    }
+    </script>
+
+    <style scoped>
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    li {
+        float: left;
+    }
+
+    li a {
+        display: block;
+        padding: 8px;
+        background-color: rgb(109, 109, 182);
+        color: #fff;
+    }
+
+    footer{
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: rgb(109, 109, 182);
+        color: #fff;
+        text-align: center;
+    }
+    </style>
+    ```
+
+### 31. Agregar un nuevo layout
+1. Crear layout **my-app\layouts\contacto.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Layout Contacto</h1>
+        </div>
+    </template>
+    ```
+2. Modificar viista **my-app\pages\contacto.vue**:
+    ```vue
+    ≡
+    <script>
+    export default {
+        layout: "contacto"
+    }
+    </script>
+    ```
+
+### 32. CSS en diferentes layouts
+1. Modificar layout **my-app\layouts\contacto.vue**:
+    ```vue
+    <template>
+        <div>
+            <div>
+                <h1>Layout Contacto</h1>
+                <ul>
+                    <li v-for="ruta in rutas" :key="ruta.label">
+                        <nuxt-link :to="ruta.ruta">{{ ruta.label }}</nuxt-link>
+                    </li>
+                </ul>
+            </div>
+            <Nuxt/>
+            <footer>
+                <div>
+                    &copy; 2021 
+                </div>
+            </footer>
+        </div>
+    </template>
+
+    <script scoped>
+    export default {
+        data(){
+            return {
+                rutas: [
+                    { ruta: '/', label: 'Inicio' },
+                    { ruta: '/users/1', label: 'Usuarios' },
+                    { ruta: '/carros', label: 'Carros' },
+                    { ruta: '/motos', label: 'Motos' },
+                    { ruta: '/contacto', label: 'Contacto' }
+                ]
+            }
+        }
+    }
+    </script>
+
+    <style scoped>
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    li {
+        float: none;
+    }
+
+    li a {
+        display: block;
+        padding: 8px;
+        background-color: rgb(36, 3, 5);
+        color: #fff;
+    }
+
+    footer{
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: rgb(36, 3, 5);
+        color: #fff;
+        text-align: center;
+    }
+    </style>
+    ```
+    + **Nota**: partir del layout **my-app\layouts\default.vue**.
+
+### 33. Página de error
+1. Crear layout **my-app\layouts\error.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1 v-if="error.statusCode == 404">Página no encontrada</h1>
+            <h1 v-else>Algo malo salio</h1>
+            <nuxt-link to="/">Volver al inicio</nuxt-link>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        props: ['error'],
+        layout: 'empty'
+    }
+    </script>
+    ```
+2. Crear layout **my-app\layouts\empty.vue**:
+    ```vue
+    <template>
+        <div>
+            <Nuxt/>
+        </div>
+    </template>
+    ```
+
+### 34. CSS global
+1. Crear archivo de estilo **my-app\assets\main.css**:
+    ```css
+    body {
+        background-color: rgb(214, 216, 224);
+    }
+
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    li {
+        float: left;
+    }
+
+    li a {
+        display: block;
+        padding: 8px;
+        background-color: rgb(109, 109, 182);
+        color: #fff;
+    }
+
+    footer{
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: rgb(109, 109, 182);
+        color: #fff;
+        text-align: center;
+    }
+
+    nav {
+        background-color: rgb(109, 109, 182);
+        min-height: 40px;
+        line-height: 40px;
+    }
+    ```
+2. Vicular el nuevo archivo de estilo con el proyecto **my-app** en **my-app\nuxt.config.js**:
+    ```js
+    ≡
+    // Global CSS: https://go.nuxtjs.dev/config-css
+    css: [
+        '@/assets/main.css'
+    ],
+    ≡
+    ```
+3. Modificar layout **my-app\layouts\default.vue**:
+    ```vue
+    <template>
+        <div>
+            <div>
+                <nav>
+                    <ul>
+                        <li v-for="ruta in rutas" :key="ruta.label">
+                            <nuxt-link :to="ruta.ruta">{{ ruta.label }}</nuxt-link>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <Nuxt/>
+            <footer>
+                <div>
+                    &copy; 2021 
+                </div>
+            </footer>
+        </div>
+    </template>
+
+    <script scoped>
+    export default {
+        data(){
+            return {
+                rutas: [
+                    { ruta: '/', label: 'Inicio' },
+                    { ruta: '/users/1', label: 'Usuarios' },
+                    { ruta: '/carros', label: 'Carros' },
+                    { ruta: '/motos', label: 'Motos' },
+                    { ruta: '/contacto', label: 'Contacto' }
+                ]
+            }
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### 35. Importar fuentes en la configuración Nuxt
+1. Ir a [Google Fonts](https://fonts.google.com) y seleccionar una fuente y obtener un link cualquiera:
+    ```html
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Palette+Mosaic&family=Roboto:wght@100&display=swap" rel="stylesheet">
+    ```
+2. Agregar la fuente seleccionada en **my-app\nuxt.config.js**:
+    ```js
+    ≡
+    // Global page headers: https://go.nuxtjs.dev/config-head
+    head: {
+        ≡
+        link: [
+            ≡
+            { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Palette+Mosaic&family=Roboto:wght@100&display=swap' }
+        ]
+    },
+    ≡
+    ```
+3. Modificar archivo de estilos **my-app\assets\main.css**:
+    ```css
+    ≡
+    h1 {
+        text-align: center;
+        margin: 20px 0px;
+        font-family: 'Palette Mosaic', 'sans-serif';
+    }
+    ```
+
+### 36. Transiciones de páginas
+1. Modificar archivo de estilos **my-app\assets\main.css**:
+    ```css
+    ≡
+    .page-enter,
+    .page-leave-to {
+        opacity: 0;
+    }
+
+    .page-enter-active,
+    .page-leave-active {
+        transition: opacity 0.5s;
+    }
+    ```
+2. Modificar **my-app\nuxt.config.js**:
+    ```js
+    ≡
+    pageTransition: 'page',
+    // Global CSS: https://go.nuxtjs.dev/config-css
+    css: [
+        '@/assets/main.css'
+    ],
+    ≡
+    ```
+
+### 37. Transiciones de layout
+1. Modificar archivo de estilos **my-app\assets\main.css**:
+    ```css
+    ≡
+    .slide-enter,
+    .slide-leave-to {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+
+    .slide-enter-active,
+    .slide-leave-active {
+        transition: all 0.5s ease;
+    }
+    ≡
+    ```
+2. Modificar **my-app\nuxt.config.js**:
+    ```js
+    ≡
+    pageTransition: 'page',
+    layoutTransition: 'slide',
+    // Global CSS: https://go.nuxtjs.dev/config-css
+    css: [
+        '@/assets/main.css'
+    ],
+    ≡
+    ```
+
+### 38. Carpeta Componentes
+1. Crear componente **my-app\components\cardInfo.vue**:
+    ```vue
+    <template>
+        <div>
+            <button @click="active = !active" v-text="active ? 'Ocultar' : 'Ver'">Ver</button>
+            <transition name="slide">
+                <div v-show="active">
+                    <slot/>
+                </div>
+            </transition>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                active: false
+            }
+        }
+    }
+    </script>
+    ```
+2. Modificar vista **my-app\pages\index.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            ≡
+            <div>
+                <card-info>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque, dolor hic voluptas aut numquam vel quo repudiandae quos exercitationem, voluptate earum ut consequatur quisquam error culpa libero ullam? Labore, nobis!</p>
+                    <p>Tempora animi omnis praesentium, maiores excepturi minus esse modi harum temporibus tenetur corporis, fuga hic atque. Adipisci neque voluptates maiores omnis, molestiae odit impedit harum voluptatibus, labore nisi, quos deserunt!</p>
+                </card-info>
+            </div>
+        </div>
+    </template>
+    ≡
+    ```
+3. Modificar vista **my-app\pages\users\\_id.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Index User</h1>
+            <card-info>
+                <p>Usuarios diponibles</p>
+            </card-info>
+            <p>{{ $route.params }}</p>
+            <p>{{ $route.params.id }}</p>
+        </div>
+    </template>
+    ≡
+    ```
+
+### 39. Archivos del proyecto sección 3
++ Proyecto autor: **00recursos\test-nuxt.zip**.
+
+
+## Sección 4: Strapi GraphQL
+### 40. Sitios web visitados en la sección
 1 min
-
-
-
 
 
 
@@ -530,33 +954,6 @@
 
 
 
-### 29. Layouts, páginas y componentes
-1 min
-### 30. Carpeta layout
-6 min
-### 31. Agregar un nuevo layout
-2 min
-### 32. CSS en diferentes layouts
-3 min
-### 33. Página de error
-4 min
-### 34. CSS global
-3 min
-### 35. Importar fuentes en la configuración Nuxt
-3 min
-### 36. Transiciones de páginas
-2 min
-### 37. Transiciones de layout
-1 min
-### 38. Carpeta Componentes
-5 min
-### 39. Archivos del proyecto sección 3
-1 min
-
-
-## Sección 4: Strapi GraphQL
-### 40. Sitios web visitados en la sección
-1 min
 ### 41. introducción a GraphQL
 4 min
 ### 42. Nuevas versiones de Strapi
@@ -587,6 +984,9 @@
 3 min
 ### 55. Valores por defecto de Strapi
 4 min
+
+
+## Sección 5: GraphQL
 ### 56. Esquemas y tipos
 1 min
 ### 57. Queries (Pedidos)

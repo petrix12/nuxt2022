@@ -61,6 +61,12 @@
                 </li>
             </ul>
         </div>
+        <div>
+            <card-info>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque, dolor hic voluptas aut numquam vel quo repudiandae quos exercitationem, voluptate earum ut consequatur quisquam error culpa libero ullam? Labore, nobis!</p>
+                <p>Tempora animi omnis praesentium, maiores excepturi minus esse modi harum temporibus tenetur corporis, fuga hic atque. Adipisci neque voluptates maiores omnis, molestiae odit impedit harum voluptatibus, labore nisi, quos deserunt!</p>
+            </card-info>
+        </div>
     </div>
 </template>
 

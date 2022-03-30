@@ -1,6 +1,9 @@
 <template>
     <div class="container">
         <h1>Index User</h1>
+        <card-info>
+            <p>Usuarios diponibles</p>
+        </card-info>
         <p>{{ $route.params }}</p>
         <p>{{ $route.params.id }}</p>
     </div>
