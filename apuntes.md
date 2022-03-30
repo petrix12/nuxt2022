@@ -16,48 +16,164 @@
     + $ git push -u origin main
 
 
-## Sección 1: Instalar Herramientas
-### 1. Instalar Visual Studio Code
-1. Instalar [Visual Studio Code](https://code.visualstudio.com).
-
-
-Contenido del curso
+## Sección 1: Introducción
 ### 1. Introducción
-1 min
++ **Contenido**: presentación del curso.
+
 ### 2. Canales de comunicación y aprendizaje
-1 min
++ **Canales de comunicación y aprendizaje**:
+    + 📑 Facebook: https://facebook.com/tutorialesatualcance
+    + 📷 Instagram: https://instagram.com/tutorialesatualcance
+    + 👨‍💼 LinkedIn: https://www.linkedin.com/in/juanfernandourrego
+    + https://tutorialesatualcance.com
+    + YouTube: https://youtube.com/c/tutorialesatualcance
+
 ### 3. ¿ Qué es NuxtJS ?
-2 min
++ **Contenido**: sobre NuxtJS.
+
 ### 4. Strapi
-1 min
++ **Contenido**: sobre Strapi.
+
 ### 5. ¿ Qué es GraphQL ?
-1 min
++ **Contenido**: sobre GraphQL.
+
 ### 6. Instalación Node JS
-2 min
+1. Instalar [Node.js](https://nodejs.org/es)
+   
 ### 7. Instalación Visual Studio Code
-4 min
+1. Instalar [Visual Studio Code](https://code.visualstudio.com)
+2. Instalar las siguientes extensiones de VSCode:
+    + Vetur
+        + Pine Wu
+        + Vue tooling for VS Code
+    + GraphQL for VSCode
+        + Kumar Harsh
+        + GraphQL syntax highlighting, linting, auto-complete, and more!
+    + Material Icon Theme
+        + Philipp Kief
+        + Material Design Icons for Visual Studio Code
+    + htmltagwrap
+        + Brad Gashler
+        + Wraps selected code with HTML tags
+    + Vue 3 Support - All In One
+        + Eno Yao
+        + Vue 2/3 Code Syntax Highlight, Snippets, Template Generator And Code Formatters Into Visual Studio Code.
+3. Crear **index.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body>
+        <div id="container">
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis animi minima facilis explicabo cupiditate at perspiciatis laborum eos vitae, alias atque ut. Laborum sequi natus facere iure quod voluptatibus sed?</p>
+            <p>Incidunt a inventore quisquam, dolores nemo quasi quos iure qui eligendi sapiente culpa! Facere quaerat porro nam deserunt aut in tempore dignissimos ipsa beatae, aliquam, ut architecto id nisi voluptate?</p>
+            <p>Iure minima a aut architecto nesciunt ab autem, enim asperiores consectetur tempore, id eius quia dicta temporibus omnis reiciendis nam vitae! Expedita nulla cum porro? Libero ad cupiditate iure magnam.</p>
+            <ul>
+                <li>item 1</li>
+                <li>item 2</li>
+                <li>item 3</li>
+                <li>item 4</li>
+                <li>item 5</li>
+            </ul>
+        </div>
+    </body>
+    </html>
+    ```
+    + **Nota 1**: se puede generar el cuerpo inicial del body con **div#container>(p*3>lorem)+ul>li*5>{item $}**.
+    + **Nota 2**: al seleccionar algo y presionar **Alt+W** la selección queda encerrada en una etiqueta html.
+4. Borrar **index.html**.
+
 ### 8. Modos de Renderizado Nuxt JS
-1 min
++ **Contenido**: sobre los tipos de aplicaciones que podemos crear con Nuxt.js.
+
 ### 9. ¿Qué es renderizado del lado del servidor SSR ?
-2 min
++ **Contenido**: sobre el renderizado del lado del servidor SSR.
+
 ### 10. ¿Qué es el generador de sitios estáticos SSG ?
-2 min
++ **Contenido**: sobre el generador de sitios estáticos SSG.
+
 ### 11. SSR vs SSG
-1 min
++ **Contenido**: sobre SSR vs SSG.
+
 ### 12. Crear un proyecto Nuxt JS
-5 min
+1. Crear proyecto Nuxt:
+    + $ npx create-nuxt-app my-app
+    + Ok to proceed? (y): **y**
+    + ? Project name: (my-app): **ENTER**
+    + Seleccionar: **> JavaScript**
+    + Seleccionar: **> Npm**
+    + Seleccionar: **> None**
+    + Seleccionar: **>( ) Axios - Promise based HTTP client**
+    + ? Linting tools: **ENTER**
+    + ? Testing framework: **> None**
+    + ? Rendering mode: **> Universal (SSR / SSG)**
+    + ? Deployment target: **> Server (Node.js hosting)**
+    + ? Development tools: **ENTER**
+    + ? What is your GitHub username? (Pedro Bazó): **ENTER**
+    + ? Version control system: **> Git**
+2. Ejecutar el nuevo proyecto:
+    + $ cd my-app
+    + $ npm run dev
+
 ### 13. Diferencias entre 2.15 y 2.14
-1 min
++ **Contenido**: sobre las diferencias en la estructura de un proyecto Nuxt.js entre las versiones 2.15 y 2.14.
+
 ### 14. Agregar la carpeta layout
-4 min
+1. Modificar **my-app\pages\index.vue**:
+    ```vue
+    <template>
+        <div>Soluciones++</div>
+    </template>
+
+    <script>
+    export default {
+        name: 'IndexPage'
+    }
+    </script>
+    ```
+2. Crear layout **my-app\layouts\default.vue**:
+    ```vue
+    <template>
+        <div>
+            <header>Título</header>
+                <Nuxt/>
+            <footer>Pie</footer>
+        </div>
+    </template>
+    ```
+
+## Sección 2: Rutas con Nuxt JS
 ### 15. Cambios entre versiones
-1 min
++ Proyecto del autor: **00recursos\my-app.zip**.
+    + Para instalar las dependencias:
+        + $ npm i
+    + Para ejecutar proyecto:
+        + $ npm run dev
+
 ### 16. Estructura de un proyecto Nuxt JS
-4 min
++ **Contenido**: sobre la estructura de un proyecto en Nuxt.js.
+
 ### 17. Router Nuxt
-1 min
++ **Contenido**: sobre como administra las rutas (name, path, component) Nuxt.js.
+
 ### 18. Carpeta Páginas
-3 min
+1. Modificar **my-app\pages\index.vue**:
+    ```vue
+    ```
+2. mmm
+
+
+
+    ```vue
+    ```
+
+
+
 ### 19. Nuxt-link
 3 min
 ### 20. Navegación por métodos
@@ -76,6 +192,9 @@ Contenido del curso
 3 min
 ### 27. Páginas anidadas
 3 min
+
+
+## Sección 3: Layouts, páginas y componentes
 ### 28. Sitios web visitados en la sección
 1 min
 ### 29. Layouts, páginas y componentes
