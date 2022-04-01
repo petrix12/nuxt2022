@@ -941,7 +941,567 @@
 
 ## Sección 4: Strapi GraphQL
 ### 40. Sitios web visitados en la sección
-1 min
+1. Páginas de interes:
+    + https://swapi.dev
+    + https://hoppscotch.io/es
+    + https://graphql.org/swapi-graphql
+    + https://strapi.io
+
+### 41. introducción a GraphQL
++ **Contenido**: introducción a GraphQL.
+
+### 42. Nuevas versiones de Strapi
++ No utilizar plantilla.
++ En las últimas versiones de Strapi, al momento de crear el proyecto en el tipo de instalación quickStart, strapi preguntará si quieres utilizar una plantilla. Debes responder NO, ya que nosotros crearemos nuestras propias colecciones.
+
+### 43. Instalación de Strapi
+1. Crear proyecto **backend** de strapi:
+    + $ npx create-strapi-app backend
+    + Ok to proceed? (y): **y**.
+    + ? Choose your installation type: **> Quickstart (recommended)**.
+
+### 44. Admin panel de Strapi
+1. Luego de la instalación del proyecto **backend** se desplegará una página (http://localhost:1337/admin/auth/register-admin) para registrarse.
+2. Credenciales obtenidas:
+    + URL: http://localhost:1337/admin
+    + Usuario: bazo.pedro@gmail.com
+    + Clave: *****
+3. Para levantar el servicio:
+    + cd backend
+    + yarn develop
+
+### 45. Categorías archivo txt
+1. Recurso **00recursos\categories.txt**:
+    ```json
+    {
+        "data": {
+            "categories": [
+                {
+                    "name": "Aperitivos",
+                    "icon": "mdi-silverware-fork-knife",
+                    "img": "https://cdn.pixabay.com/photo/2020/02/11/15/41/shrimp-4839919_960_720.jpg",
+                    "description": "Para abrir el apetito",
+                    "slug": "aperitivos"
+                },
+                {
+                    "name": "Platos principales",
+                    "icon": "mdi-pasta",
+                    "img": "https://live.staticflickr.com/65535/51016907195_4460dcfd50_z.jpg",
+                    "description": "Para invitar buenos amigos",
+                    "slug": "platos-principales"
+                },
+                {
+                    "name": "Desayunos",
+                    "icon": "mdi-food-croissant",
+                    "img": "https://live.staticflickr.com/65535/51016925505_36f9013ccd_z.jpg",
+                    "description": "Dan ganas de madrugar",
+                    "slug": "desayunos"
+                },
+                {
+                    "name": "Postres",
+                    "icon": "mdi-cookie",
+                    "img": "https://live.staticflickr.com/65535/51082651598_7a69ed6e83_z.jpg",
+                    "description": "El postre es obligatorio no importa la dieta!",
+                    "slug": "postres"
+                },
+                {
+                    "name": "Sopas",
+                    "icon": "mdi-bowl-mix",
+                    "img": "https://live.staticflickr.com/65535/51086110886_d236fc6fe9_z.jpg",
+                    "description": "Siempre cae bien igual si hace 36 grados a la sombra.",
+                    "slug": "sopas"
+                },
+                {
+                    "name": "Bebidas",
+                    "icon": "mdi-glass-cocktail",
+                    "img": "https://live.staticflickr.com/65535/51086110856_bd6330d3bf_z.jpg",
+                    "description": "Pide un taxi! si bebes mucho.",
+                    "slug": "bebidas"
+                },
+                {
+                    "name": "Veganas",
+                    "icon": "mdi-leaf",
+                    "img": "https://cdn.pixabay.com/photo/2021/02/18/23/29/avocado-6028656_960_720.jpg",
+                    "description": "Contra el calentamiento global! al menos una vez a la semana.",
+                    "slug": "veganas"
+                },
+                {
+                    "name": "Rapidas",
+                    "icon": "mdi-hamburger",
+                    "img": "https://live.staticflickr.com/65535/51082653073_b8f86c8634_z.jpg",
+                    "description": "Lo ideal es no morir de hambre.",
+                    "slug": "rapidas"
+                }
+            ]
+        }
+    }
+    ```
+
+### 46. Versión V4 strapi
++ **Importante si tienes la versión V4 de Strapi**: En el siguiente video vamos a probar un endPoint de Strapi, a partir de la versión V4 hay 2 pequeñas modificaciones, aquí tienes la lista de cambios en caso tal que estes utilizando esta versión V4.
+1. Al momento de crear la colección debes determinar el nombre del campo en singular y plural ya que al hacer consultas si utilizas el plural (trae como respuesta un array de objetos con todas las entradas) y si quieres un dato especifico el singular (trae como respuesta un solo objeto con una entrada). Tu decides como quires nombrar el campo en singular o plural.
+2. El endpoint cambia se debe agregar la palabra api al url (http://localhost:1337/api/categories), el url lo puedes observar al momento de cambiar los permisos.
++ **Nota final**: La versión V4 no tiene cambio de idioma por el momento, siempre estará en inglés.
+
+### 47. Tipo de colección de Strapi
+1. Ir a **http://localhost:1337/admin**.
+2. Click en **Create your first Content type**.
+3. Click en **Create new collection type**.
+4. En **Display name** ingresar **categories** y click en **Continuar**.
+    + En caso de ser necesario establecer:
+        + API ID (Singular): **category**
+        + API ID (Plural): **categories**
+5. En **Select a field for your collection type** seleccionar **Text** y luego en **Name** ingresar **name** y click en **Add another field**.
+6. En **Select a field for your collection type** seleccionar **Text** y luego en **Name** ingresar **icon** y click en **Add another field**.
+7. En **Select a field for your collection type** seleccionar **Text** y luego en **Name** ingresar **img** y click en **Add another field**.
+8. En **Select a field for your collection type** seleccionar **Text** y luego en **Name** ingresar **description**, seleccionar **Long text** y click en **Add another field**.
+9. En **Select a field for your collection type** seleccionar **UID** y luego en **Name** ingresar **slug**, en **Attached field
+** enlazar a **name** y click en **Finish**.
+10. Click en **Save**.
+11. Seleccionar la nueva calección **categorias** e ingresar los siguientes documentos dando click en **Create new entry**:
+    ```json
+    {
+        "name": "Test categoría",
+        "icon": "icon",
+        "img": "no hay",
+        "description": "bla bla bla bla",
+    },
+    {
+        "name": "Otra",
+        "icon": "otra",
+        "img": "no hay",
+        "description": "bla bla bla bla",
+    }
+    ```
+    + **Nota**: para registrarlos definitivamente dar click en **Save** y luego en **Publish**.
+12. Click en **Settings** luego en **Roles** (USERS & PERMISSIONS PLUGIN).
+13. Editar **Public** y establecer los siguientes permisos:
+    + Category:
+        + find
+        + findOne
+14. Click en **Save**.
+15. Ir a **https://hoppscotch.io/es**.
+16. En **GET** ingresar **http://localhost:1337/api/categories** y click en **Enviar**.
+17. En **GET** ingresar **http://localhost:1337/api/categories/1** y click en **Enviar**.
+
+### 48. Versión V4 strapi GraphQL
+1. Link de referencia:
+    + https://docs.strapi.io/developer-docs/latest/plugins/graphql.html#usage
+2. Para la version V4 de strapi el marketplace no ha sido habilitado, entonces se debe hacer la instalación manual de GraphQL.
+3. En la carpeta raíz de tu proyecto (**backend**) debes ingresar el siguiente comando:
+    + $ npm run strapi install graphql
+    + **Nota**: Asegúrate que el servidor no este corriendo.
+4. En el siguiente video haremos la instalación por código.
+
+### 49. Instalación de GraphQL en Strapi
+1. Parar el servidor **backend**.
+2. Ejecutar:
+    + $ npm run strapi install graphql
+3. Si el servidor no inicia solo luego de la instalación de grphql, ejecutar:
+    + $ npm run develop
+
+### 50. Versión V3 vs V4 strapi GraphQL
++ En la versión V4 de Strapi se adjuntan nuevas indexaciones (data y attributes) por lo que el GraphQL cambia un poco.
++ Aquí puedes ver el comparativo:
+    + V3 => Es directa y adjunta todos los datos en un solo index
+    ```graphql
+    query{
+        categories{
+            id
+            name
+            icon
+        }
+    }
+    ```
+    + V4 => Añade un data como hijo que puede devolver el id y los atributos como valores
+    ```graphql
+    query{
+        categories{
+            data{
+                id
+                attributes{
+                    name
+                    slug
+                }
+            }
+        }
+    }
+    ```
++ En el curso se utiliza la versión V3, no hay ningún problema si tu utilizas la versión V4, tendrás que hacer pequeñas modificaciones que estarán escritas antes o despuésde cada video.
++ Recuerda que si tienes problemas puedes preguntarnos y con gusto te ayudaremos.
++ **Nota**: La versión 4 de Strapi salió oficialmente el 30 de Noviembre de 2021, es bastante buena y estable pero, lastimosamente en el GraphQL han hecho unos cambios que complican un poco los querys.
++ La comunidad de programadores ha empezado a enviar sus quejas, esperamos la evolución de la comunidad. Por el momento el curso se ha actualizado también para dar soporte a la Versión 4.
+
+### 51. Playground de GraphQL
+1. En un navegador ir al playground de GraphQL:
+    + http://localhost:1337/graphql
+2. Realizar las siguientes consultas:
+    ```graphql
+    query{
+        categories{
+            data{
+                id
+                attributes{
+                    name
+                    icon
+                }
+            }
+        }
+    }
+    ```
+
+### 52. Recetas archivos txt
++ Recurso con información dummy de las recetas **00recursos\recipes.txt**:
+    ```json
+    {
+        "data": {
+            "recipes": [
+                {
+                    "name": "Cazuela dulce",
+                    "duration": 15,
+                    "servings": 2,
+                    "description": "Es como una cazuela pero con helado y chocolate",
+                    "ingredients": [
+                        "400 gramos de plátanos para el helado",
+                        "Congul gratis, que bien!",
+                        "100 gramos de fresas, que mal!",
+                        "3 cucharadas soperas de cacao en polvo, que bien!",
+                        "benzoato de potasio..............que mal!",
+                        "Frutas de nuestra preferencia"
+                    ],
+                    "steps": [
+                        "El platano se pela ... in consequuntur ullam, assumenda temporibus error quis vitae enim voluptates aut illo cupiditate minima, unde sint quia nostrum inventore saepe velit labore corrupti. Libero maxime non fuga illum cumque.",
+                        "Voluptatibus quidem natus reprehenderit dicta officia dolor veritatis incidunt qui, sit nisi fuga soluta. Vero deleniti autem et adipisci nisi voluptates dolores eos ipsam! Consequuntur iure eos nam repudiandae vero?"
+                    ],
+                    "img": "https://live.staticflickr.com/65535/51082652518_dfed9ede83_c.jpg"
+                },
+                {
+                    "name": "Goulash",
+                    "duration": 30,
+                    "servings": 4,
+                    "description": "El goulash o gulash o wulashhh es Lorem ipsum dolor sit amet, consectetur adipisicing elit. Molestias maxime blanditiis laboriosam, esse sapiente ad iste dolores, beatae accusamus cum eaque ex quibusdam. Inventore quam quas vel officia porro asperiores?",
+                    "ingredients": [
+                        "1 kg de ….",
+                        "4 dientes de dragón",
+                        "2 cebollas grande o cebolletas",
+                        "1 puerro",
+                        "4 tomates grandes",
+                        "1 ramita de perejil fresco",
+                        "1 cucharada de comino en polvo",
+                        "1 cucharada sopera de huevo de dodo"
+                    ],
+                    "steps": [
+                        "Primero tienes nimi in consequuntur ullam, assumenda temporibus error quis vitae enim voluptates aut illo cupiditate minima, unde sint quia nostrum inventore saepe velit labore corrupti. Libero maxime non fuga illum cumque.",
+                        "Voluptatibus quidem natus reprehenderit dicta officia dolor veritatis incidunt qui, sit nisi fuga soluta. Vero deleniti autem et adipisci nisi voluptates dolores eos ipsam! Consequuntur iure eos nam repudiandae vero?",
+                        "Una vez tienes el unicornio de las piernas consequatur repellat error, repudiandae vel necessitatibus praesentium a cum, quae similique mollitia ipsum numquam aliquam fugiat vero. Facere delectus aspernatur explicabo quas omnis quisquam, voluptates cum maiores.",
+                        "Hic, dolores reiciendis laborum veritatis nisi recusandae labore cupiditate vero quos asperiores dolor dolorem architecto laudantium voluptatem, sequi possimus ad, illo in incidunt praesentium obcaecati sed quasi! Alias, at reprehenderit."
+                    ],
+                    "img": "https://cdn.pixabay.com/photo/2021/02/27/10/05/goulash-6054124_960_720.jpg"
+                },
+                {
+                    "name": "Galletas",
+                    "duration": 20,
+                    "servings": 78,
+                    "description": "Las galletas de la abuela, dolor sit amet consectetur adipisicing elit. Officiis illo fugit nulla officia dicta, cum reprehenderit voluptatem sunt veritatis consequuntur deleniti. Sed explicabo suscipit fugit perspiciatis corporis enim ea dolor.",
+                    "ingredients": [
+                        "2 tazas de harina (280 gramos)",
+                        "5 taza de azúcar ¡cuidado!",
+                        "125 gramos de mantequilla.",
+                        "1 huevo.",
+                        "1 cucharadita de esencia de vainilla (opcional)",
+                        "1 tarro de dulce de leche o virutas de colores para decorar."
+                    ],
+                    "steps": [
+                        "por internet, consectetur adipisicing elit. Voluptate doloribus nemo eaque consequuntur laudantium amet recusandae, in autem! Beatae quos assumenda consequuntur modi a sed quasi architecto deserunt cumque porro.",
+                        "Voluptatem non sunt sint! Deleniti, hic culpa, voluptate sequi qui, architecto blanditiis voluptates nobis incidunt commodi in. Ipsam non mollitia pariatur minus odio dolor nisi ab, a voluptatibus odit itaque.",
+                        "Deserunt vel reprehenderit dicta atque praesentium in omnis sint ex sit adipisci totam aliquid quae ullam dignissimos minus voluptates eum beatae voluptatum quam, tempore itaque ut explicabo quo? Fugiat, quos.",
+                        "Quisquam, nesciunt magni perspiciatis non amet delectus molestias eos culpa explicabo magnam consequatur earum officia harum beatae natus, esse qui. Provident neque harum accusantium nostrum veniam, iste quaerat hic similique?",
+                        "Repudiandae modi laborum ut, similique vel neque rem, et adipisci magnam commodi maiores, nihil possimus reiciendis vitae quae iste corporis expedita magni? Ex, ad cum aliquam sequi beatae expedita soluta."
+                    ],
+                    "img": "https://cdn.pixabay.com/photo/2020/11/16/17/03/cookies-5749589_960_720.jpg"
+                },
+                {
+                    "name": "Costillas",
+                    "duration": 5,
+                    "servings": 1,
+                    "description": "Las costillas vienen de un animal mas pequeno con mas patas consectetur adipisicing elit. Sequi suscipit accusantium saepe aliquam deleniti voluptate est veniam praesentium voluptatem repellendus nostrum, debitis delectus eligendi, quidem dolores ducimus nam provident asperiores?",
+                    "ingredients": [
+                        "Costilla de Cerdo",
+                        "Salsa Barbacoa al gusto",
+                        "Pimentón dulce ",
+                        "Hierbas"
+                    ],
+                    "steps": [
+                        "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus ut at, quasi ad quam, sed blanditiis a totam, eius ratione maiores corrupti reprehenderit quis ullam aliquam ex iusto! Nostrum, excepturi?",
+                        "Los Mamuts ya no existen. Ipsum impedit, magnam mollitia eos repellendus veniam necessitatibus iste, unde saepe ex tempore facilis neque odio asperiores, fugiat repellat. Impedit reiciendis vitae exercitationem numquam consequuntur aperiam vel."
+                    ],
+                    "img": "https://cdn.pixabay.com/photo/2020/06/25/21/24/spare-ribs-5340942_960_720.jpg"
+                },
+                {
+                    "name": "Pollo",
+                    "duration": 20,
+                    "servings": 4,
+                    "description": "El pollo maiores totam saepe voluptate quibusdam ipsum. Provident deserunt dignissimos debitis ut sequi, qui dolores.",
+                    "ingredients": [
+                        "1 cucharadita de ajo en polvo, para el marinado.",
+                        "1 cucharadita de mostaza, para el marinado.",
+                        "suficiente de sal.",
+                        "suficiente de pimienta.",
+                        "6 muslos de pollo, con piel."
+                    ],
+                    "steps": [
+                        "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus ut at, quasi ad quam, sed blanditiis a totam, eius ratione maiores corrupti reprehenderit quis ullam aliquam ex iusto! Nostrum, excepturi?",
+                        "Los Mamuts ya no existen. Ipsum impedit, magnam mollitia eos repellendus veniam necessitatibus iste, unde saepe ex tempore facilis neque odio asperiores, fugiat repellat. Impedit reiciendis vitae exercitationem numquam consequuntur aperiam vel."
+                    ],
+                    "img": "https://cdn.pixabay.com/photo/2021/01/27/13/08/chicken-5954894_960_720.jpg"
+                },
+                {
+                    "name": "Pasta",
+                    "duration": 180,
+                    "servings": 20,
+                    "description": "La típica pasta de soltero pero con camarones",
+                    "ingredients": [
+                        "1 lb de pasta",
+                        "2 cucharadas de aceite de oliva",
+                        "4 dientes de ajo, finamente picados",
+                        "1 cebolla blanca, finamente picada",
+                        "1 lb de camarones",
+                        "2 cucharadas de pasta de tomate"
+                    ],
+                    "steps": [
+                        "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus ut at, quasi ad quam, sed blanditiis a totam, eius ratione maiores corrupti reprehenderit quis ullam aliquam ex iusto! Nostrum, excepturi?",
+                        "Los Mamuts ya no existen. Ipsum impedit, magnam mollitia eos repellendus veniam necessitatibus iste, unde saepe ex tempore facilis neque odio asperiores, fugiat repellat. Impedit reiciendis vitae exercitationem numquam consequuntur aperiam vel."
+                    ],
+                    "img": "https://cdn.pixabay.com/photo/2018/07/18/19/12/spaghetti-3547078_960_720.jpg"
+                },
+                {
+                    "name": "Sopa de calabaza",
+                    "duration": 20,
+                    "servings": 3,
+                    "description": "blab bla bla",
+                    "ingredients": [
+                        "calabaza",
+                        "agua",
+                        "sal"
+                    ],
+                    "steps": [
+                        "Temporibus ipsum, facere cumque officia cum nostrum nemo a. Molestias maiores consequuntur atque possimus accusantium velit pariatur minima at modi enim inventore, saepe aspernatur perspiciatis mollitia facilis, praesentium suscipit voluptates!",
+                        "litia molestias. Nemo illum id minima! Consequuntur libero pariatur ipsum obcaecati, expedita veniam? Totam, consequatur."
+                    ],
+                    "img": "https://cdn.pixabay.com/photo/2020/09/26/20/37/soup-5605053_960_720.jpg"
+                },
+                {
+                    "name": "Avena con frutas",
+                    "duration": 15,
+                    "servings": 1,
+                    "description": "es avena",
+                    "ingredients": [
+                        "avena",
+                        "fresas",
+                        "bananos"
+                    ],
+                    "steps": [
+                        "Temporibus ipsum, facere cumque officia cum nostrum nemo a. Molestias maiores consequuntur atque possimus accusantium velit pariatur minima at modi enim inventore, saepe aspernatur perspiciatis mollitia facilis, praesentium suscipit voluptates!"
+                    ],
+                    "img": "https://cdn.pixabay.com/photo/2018/02/27/18/41/muesli-3186256_960_720.jpg"
+                }
+            ]
+        }
+    }
+    ```
+
+### 53. Tipo de Colección recetas
++ https://materialdesignicons.com
++ https://www.instagram.com/olivia.orrego.ph/?hl=es
+1. Ir a Strapi en **Content-Type Builder** (http://localhost:1337/admin/plugins/content-type-builder/content-types) y crear una nueva colección con la siguiente estructura:
+    ```json
+    "recipes": {
+        "name": {
+            "collection type": "Text",
+            "Type": "Short text"
+        },
+        "duration": {
+            "collection type": "Number",
+            "Number format": "integer"
+        },
+        "servings": {
+            "collection type": "Number",
+            "Number format": "integer"
+        },
+        "img": {
+            "collection type": "Text",
+            "Type": "Short text"
+        },
+        "description": {
+            "collection type": "Text",
+            "Type": "Long text"
+        },
+        "ingredients": {
+            "collection type": "JSON"
+        },
+        "steps": {
+            "collection type": "JSON"
+        },
+        "likes": {
+            "collection type": "Number",
+            "Number format": "big integer"
+        }
+    },
+    ```
+2. Establecer relación:
+    + Luego de añadir la colección anterior dar click **Add another field to this collection type**.
+    + En **Select a field for your collection type** seleccionar **Relation**.
+    + Establecer la relación con **Categories**.
+    + En tipo de ralación seleccionar: **category has many recipes**.
+    + Dar click en **Finish**.
+    + Dar click en **Save**.
+
+### 54. Borrador y Publicado
+1. Cargar las colecciones **categories** y **recipes** con los datos de prueba suministrados anteriormente.
+2. Agregar un nuevo documento a la colección **recipes** con el panel de Strapi:
+    ```json
+    {
+        "name": "Sopas Calientes"
+    }
+    ```
+3. Presionar el botón **Save**.
+4. Para quitar la condición de **Draft** (Borrador):
+    + Ir a **Content-Type Builder**.
+    + En **COLLECTION TYPES** seleccionar **Categories** y luego editar.
+    + En configuración avanzada desactivar la opción del sistema de borrador.
+
+### 55. Valores por defecto de Strapi
+1. Realizar consulta en http://localhost:1337/graphql:
+    ```graphql
+    query {
+        recipes {
+            data {
+                attributes{
+                    name
+                    description
+                    duration
+                    ingredients
+                }
+            }
+        }
+    }
+    ```
+2. Establecer permisos en Strapi de:
+    + find
+    + findOne
+3. En el atributo **likes** establecer 0 como valor por defecto en configuración avanzada.
+
+
+## Sección 5: GraphQL
+### 56. Esquemas y tipos
++ **Contenido**: sobre esquemas y tipos en GraphQL.
+
+### 57. Queries (Pedidos)
+1. Realizar la siguiente consulta en http://localhost:1337/graphql:
+    ```graphql
+    query {
+        categories {
+            data {
+                id
+                attributes{
+                    name
+                    recipes {
+                        data {
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+### 58. Strapi V4 (Pedidos) GraphQL
++ Con las nuevas indexaciones que se adjuntan en la versión 4 nuestro GraphQL quedaría de la siguiente forma.
+    ```graphql
+    query{
+        categories{
+            data{
+                id
+                attributes{
+                    name
+                    recipes{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
++ Recuerda que en el playground siempre puedes mirar la documentación para ver que tipo de datos y la estructura de tu GraphQL
+
+### 59. Argumentos y variables
++ **Contenido**: sobre argumentos y variables en GraphQL.
+
+### 60. Pedidos de una sola entrada
+1. Realizar petición GraphQL:
+    ```graphql
+    query {
+        recipe(id:1) {
+            data {
+                attributes{
+                    name
+                    steps
+                    ingredients
+                }
+            }
+        }
+    }
+    ```
+2. Realizar petición GraphQL:
+    ```graphql
+    query($id:ID!) {
+        recipe(id:$id) {
+            data {
+                attributes{
+                    name
+                    steps
+                    ingredients
+                }
+            }
+        }
+    }
+    ```
+    Query variables:
+    ```json
+    {"id":3}
+    ```
+
+### 61. Strapi V4 (Pedido de una sola entrada) GraphQL
++ Con las nuevas indexaciones que se adjuntan en la versión 4 nuestro GraphQL quedaría de la siguiente forma:
+    ```graphql
+    query($id:ID!){
+        recipe(id:$id){
+            data{
+                id
+                attributes{
+                    name
+                    steps
+                    ingredients
+                }
+            }
+        }
+    }
+    ```
+    Query variables: {id:1}
++ **Nota**: Recuerda utilizar el nombre en singular que agregaste al momento de crear la colección. Recuerda que en el playground siempre puedes mirar la documentación para ver que tipo de datos y la estructura de tu GraphQL
+
+### 62. Mutaciones
+4 min
+
 
 
 
@@ -954,53 +1514,6 @@
 
 
 
-### 41. introducción a GraphQL
-4 min
-### 42. Nuevas versiones de Strapi
-1 min
-### 43. Instalación de Strapi
-1 min
-### 44. Admin panel de Strapi
-2 min
-### 45. Categorías archivo txt
-1 min
-### 46. Versión V4 strapi
-1 min
-### 47. Tipo de colección de Strapi
-5 min
-### 48. Versión V4 strapi GraphQL
-1 min
-### 49. Instalación de GraphQL en Strapi
-2 min
-### 50. Versión V3 vs V4 strapi GraphQL
-1 min
-### 51. Playground de GraphQL
-2 min
-### 52. Recetas archivos txt
-1 min
-### 53. Tipo de Colección recetas
-3 min
-### 54. Borrador y Publicado
-3 min
-### 55. Valores por defecto de Strapi
-4 min
-
-
-## Sección 5: GraphQL
-### 56. Esquemas y tipos
-1 min
-### 57. Queries (Pedidos)
-2 min
-### 58. Strapi V4 (Pedidos) GraphQL
-1 min
-### 59. Argumentos y variables
-1 min
-### 60. Pedidos de una sola entrada
-3 min
-### 61. Strapi V4 (Pedido de una sola entrada) GraphQL
-1 min
-### 62. Mutaciones
-4 min
 ### 63. Mutaciones V3 vs V4 Strapi GrapQL
 1 min
 ### 64. Creación de contenido
@@ -1013,6 +1526,9 @@
 1 min
 ### 68. Borrar en Strapi V4 GraphQL
 1 min
+
+
+## Sección 6: Proyecto Nuxt + Vuetify
 ### 69. Sitios web visitados en la sección
 1 min
 ### 70. Nuxt y Vuetify
@@ -1287,3 +1803,12 @@
 1 min
 ### 205. Clase Extra
 
+
+
+## Comandos comunes:
+1. Ejecutar **my-app**:
+    + $ cd my-app
+    + $ npm run dev
+2. Para levantar el **backend**:
+    + $ cd backend
+    + $ npm run develop

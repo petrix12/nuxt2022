@@ -1,0 +1,62 @@
+{
+  "data": {
+    "categories": [
+      {
+        "name": "Aperitivos",
+        "icon": "mdi-silverware-fork-knife",
+        "img": "https://cdn.pixabay.com/photo/2020/02/11/15/41/shrimp-4839919_960_720.jpg",
+        "description": "Para abrir el apetito",
+        "slug": "aperitivos"
+      },
+      {
+        "name": "Platos principales",
+        "icon": "mdi-pasta",
+        "img": "https://live.staticflickr.com/65535/51016907195_4460dcfd50_z.jpg",
+        "description": "Para invitar buenos amigos",
+        "slug": "platos-principales"
+      },
+      {
+        "name": "Desayunos",
+        "icon": "mdi-food-croissant",
+        "img": "https://live.staticflickr.com/65535/51016925505_36f9013ccd_z.jpg",
+        "description": "Dan ganas de madrugar",
+        "slug": "desayunos"
+      },
+      {
+        "name": "Postres",
+        "icon": "mdi-cookie",
+        "img": "https://live.staticflickr.com/65535/51082651598_7a69ed6e83_z.jpg",
+        "description": "El postre es obligatorio no importa la dieta!",
+        "slug": "postres"
+      },
+      {
+        "name": "Sopas",
+        "icon": "mdi-bowl-mix",
+        "img": "https://live.staticflickr.com/65535/51086110886_d236fc6fe9_z.jpg",
+        "description": "Siempre cae bien igual si hace 36 grados a la sombra.",
+        "slug": "sopas"
+      },
+      {
+        "name": "Bebidas",
+        "icon": "mdi-glass-cocktail",
+        "img": "https://live.staticflickr.com/65535/51086110856_bd6330d3bf_z.jpg",
+        "description": "Pide un taxi! si bebes mucho.",
+        "slug": "bebidas"
+      },
+      {
+        "name": "Veganas",
+        "icon": "mdi-leaf",
+        "img": "https://cdn.pixabay.com/photo/2021/02/18/23/29/avocado-6028656_960_720.jpg",
+        "description": "Contra el calentamiento global! al menos una vez a la semana.",
+        "slug": "veganas"
+      },
+      {
+        "name": "Rapidas",
+        "icon": "mdi-hamburger",
+        "img": "https://live.staticflickr.com/65535/51082653073_b8f86c8634_z.jpg",
+        "description": "Lo ideal es no morir de hambre.",
+        "slug": "rapidas"
+      }
+    ]
+  }
+}
