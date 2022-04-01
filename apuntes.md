@@ -1500,7 +1500,241 @@
 + **Nota**: Recuerda utilizar el nombre en singular que agregaste al momento de crear la colección. Recuerda que en el playground siempre puedes mirar la documentación para ver que tipo de datos y la estructura de tu GraphQL
 
 ### 62. Mutaciones
-4 min
+1. Crear un usuario en Strapi:
+    + Ir a **Content Manager** y luego a la colección **User**.
+    + Crear un usuario:
+        + username: prueba1
+        + email: prueba1@gmail.com
+        + password: 12345678
+        + confirmed: true
+        + blocked: false
+    + ggg
+2. Realizar la siguiente transacción GraphQL:
+    ```graphql
+    mutation{
+        login(
+            input:{
+                identifier:"prueba1"
+                password:"12345678"
+            }
+        ){
+            jwt
+        }
+    }
+    ```
+3. Obtener token:
+    ```json
+    {
+        "data": {
+            "login": {
+                "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ4ODIwODM4LCJleHAiOjE2NTE0MTI4Mzh9.C_dzYPRkB1rk8tpxKizWxuNsMA4_1wpVD_kbodOPWis"
+            }
+        }
+    }
+    ```
++ **Nota**: el tipo de token de Strapi en **Bearer**.
+
+### 63. Mutaciones V3 vs V4 Strapi GrapQL
++ En la versión 4 de Strapi se remueve el input y queda solo el data.
++ Siempre que ejecutamos una mutación debemos notificar que valores queremos en la respuesta, en la versión 4 solo debemos especificar data, aquí puedes ver un comparativo.
+    + V3 => Tiene un input que contiene un data con los valores a crear y devuelve el query de receta:
+    ```graphql
+    mutation($name:String!, $duration:Int!){
+        createRecipe(
+            input:{
+                data:{
+                    name:$name
+                    duration:$duration
+                }
+            }
+        ){
+            recipe{
+                id
+                name
+                duration
+            }
+        }
+    }
+    ```
+    + V4 => Se remueve el input y en los valores de retorno se agrega el data
+    ```graphql
+    mutation($name:String!, $duration:Int!){
+        createRecipe(
+            data:{
+                name:$name
+                duration:$duration
+            }
+        ){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                }
+            }
+        }
+    }
+    ```
+
+### 64. Creación de contenido
+1. Establecer permisos de usuarios en Strapi:
+    + Ir a **Settings**.
+    + En **USERS & PERMISSIONS PLUGIN** seleccionar **Roles**.
+    + Seleccionar **Authenticated**.
+    + En **Users-permissions** dar todos los permisos.
+2. Realizar la siguiente petición GraphQL:
+    ```graphql
+    mutation{
+        createRecipe(
+            data:{
+                name:"Pan"
+                duration:10
+            }
+        ){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                }
+            }
+        }
+    }
+    ```
+    HTTP Headers:
+    ```json
+    {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ4ODIwODM4LCJleHAiOjE2NTE0MTI4Mzh9.C_dzYPRkB1rk8tpxKizWxuNsMA4_1wpVD_kbodOPWis"
+    }
+    ```
+3. Realizar la siguiente petición GraphQL:
+    ```graphql
+    mutation($name:String!, $duration:Int!){
+        createRecipe(
+            data:{
+                name:$name
+                duration:$duration
+            }
+        ){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                }
+            }
+        }
+    }
+    ```
+    HTTP Headers:
+    ```json
+    {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ4ODIwODM4LCJleHAiOjE2NTE0MTI4Mzh9.C_dzYPRkB1rk8tpxKizWxuNsMA4_1wpVD_kbodOPWis"
+    }
+    ```
+    Query Variables:
+    ```json
+    {
+        "name": "Perro",
+        "duration": 2
+    }
+    ```
+
+### 65. Modificación de contenido
+1. Realizar la siguiente petición GraphQL:
+    ```graphql
+    mutation {
+        updateRecipe(
+            id: 8, 
+            data: { 
+                name: "Hot dog"
+            }
+        ) {
+            data {
+                id
+                attributes {
+                    name
+                    duration
+                }
+            }
+        }
+    }
+    ```
+    HTTP Headers:
+    ```json
+    {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ4ODIwODM4LCJleHAiOjE2NTE0MTI4Mzh9.C_dzYPRkB1rk8tpxKizWxuNsMA4_1wpVD_kbodOPWis"
+    }
+    ```
+
+### 66. Modificación de contenido Strapi V4 GraphQL
++ En la versión 4, se elimina el input y la palabra where ya no es necesaria. Para indicar donde quieres hacer los cambios debes simplemente indicar el id de la entrada con id. El retorno de los datos sigue igual en todas las mutaciones.
++ Ejemplo:
+    ```graphql
+    mutation($id:ID!,$name:String!, $duration:Int!){
+        updateRecipe(
+            id:$id,
+            data:{
+                name:$name
+                duration:$duration
+            }
+        ){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                }
+            }
+        }
+    }
+    ```
+
+### 67. Borrar
+1. Realizar la siguiente petición GraphQL:
+    ```graphql
+    mutation {
+        deleteRecipe(
+            id: 7
+        ) {
+            data {
+                id
+                attributes {
+                    name
+                }
+            }
+        }
+    }
+    ```
+    HTTP Headers:
+    ```json
+    {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ4ODIwODM4LCJleHAiOjE2NTE0MTI4Mzh9.C_dzYPRkB1rk8tpxKizWxuNsMA4_1wpVD_kbodOPWis"
+    }
+    ```
+
+### 68. Borrar en Strapi V4 GraphQL
++ En la versión 4, borrar es mucho más fácil ya que simplemente se pide el id de la entrada a borrar.
++ El retorno de datos es el mismo en las mutaciones.
++ Ejemplo:
+    ```graphql
+    mutation{
+        deleteRecipe(id:5){
+            data{
+                id
+                attributes{
+                    name
+                }
+            }
+        }
+    }
+    ```
+
+
+## Sección 6: Proyecto Nuxt + Vuetify
+### 69. Sitios web visitados en la sección
+1 min
+
 
 
 
@@ -1513,24 +1747,6 @@
 
 
 
-
-### 63. Mutaciones V3 vs V4 Strapi GrapQL
-1 min
-### 64. Creación de contenido
-4 min
-### 65. Modificación de contenido
-2 min
-### 66. Modificación de contenido Strapi V4 GraphQL
-1 min
-### 67. Borrar
-1 min
-### 68. Borrar en Strapi V4 GraphQL
-1 min
-
-
-## Sección 6: Proyecto Nuxt + Vuetify
-### 69. Sitios web visitados en la sección
-1 min
 ### 70. Nuxt y Vuetify
 2 min
 ### 71. Configurar el proyecto
@@ -1547,6 +1763,9 @@
 3 min
 ### 77. Archivos del proyecto sección 6
 1 min
+
+
+## Sección 7: Comunicación Nuxt con Strapi (Apollo + GraphQL)
 ### 78. Sitios web visitados en la sección
 1 min
 ### 79. Preparar el pedido
