@@ -1733,7 +1733,208 @@
 
 ## Sección 6: Proyecto Nuxt + Vuetify
 ### 69. Sitios web visitados en la sección
++ Material de apoyo:
+    + Vuetify: https://vuetifyjs.com/en
+    + Nuxt modules: https://modules.nuxtjs.org
+    + Material Design Icons: https://materialdesignicons.com
+    + Apollo: https://github.com/nuxt-community/apollo-module
+    + Api Vuetify:
+        + https://vuetifyjs.com/en/api/v-navigation-drawer
+        + https://vuetifyjs.com/en/api/v-app-bar
+        + https://vuetifyjs.com/en/styles/display
+        + https://vuetifyjs.com/en/components/footer
+        + https://vuetifyjs.com/en/styles/text-and-typography
+        + https://vuetifyjs.com/en/api/v-row
+
+### 70. Nuxt y Vuetify
+1. Crear proyecto Nuxt **frontend**:
+    + $ npx create-nuxt-app frontend
+    + ? Project name: (frontend): **ENTER**.
+    + ? Programming language: **> JavaScript**.
+    + ? Package manager: **> Npm**.
+    + ? UI framework: **> Vuetify.js**.
+    + ? Nuxt.js modules: **ENTER**.
+    + ? Linting tools: **ENTER**.
+    + ? Testing framework: **> None**.
+    + ? Rendering mode: **> Universal (SSR / SSG)**.
+    + ? Deployment target: **Static (Static/Jamstack hosting)**.
+    + ? Development tools: **ENTER**.
+    + ? What is your GitHub username? (pedro bazó): **ENTER**.
+    + ? Version control system: **> Git**.
+
+### 71. Configurar el proyecto
+1. Modificar **frontend\nuxt.config.js**:
+    ```js
+    ≡
+    // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
+    vuetify: {
+        ≡
+        theme: {
+            dark: false,
+            themes: {
+                dark: {
+                    ≡
+                }
+            }
+        }
+    },
+    ≡
+    ```
+2. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+        </v-app>
+    </template>
+    ≡
+    ```
+
+### 72. Vuetify
+1. Eliminar página **frontend\pages\inspire.vue**.
+2. Modificar página **frontend\pages\index.vue**:
+    ```vue
+
+    ```
+3. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            <v-main>
+                <nuxt/>
+            </v-main>
+        </v-app>
+    </template>
+
+    <script>
+    export default {
+        name: 'DefaultLayout',
+        data () {
+            return {
+
+            }
+        }
+    }
+    </script>
+    ```
+4. Modificar **frontend\nuxt.config.js** para establecer los colores principales:
+    ```js
+    ≡
+    // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
+    vuetify: {
+        customVariables: ['~/assets/variables.scss'],
+        theme: {
+            dark: false,
+            themes: {
+                light: {
+                    primary: '#8A9337',
+                    accent: '#EFF4C3',
+                    secondary: '#3D4058',
+                    info: colors.teal.lighten1,
+                    warning: colors.amber.base,
+                    error: colors.deepOrange.accent4,
+                    success: colors.green.accent3
+                }
+            }
+        }
+    },
+    ≡
+    ```
+
+### 73. Módulos de Nuxt
++ Módulos de Nuxt.js: https://modules.nuxtjs.org
+
+### 74. Componente de navegación vuetify
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            <v-navigation-drawer 
+                app
+                v-model="drawer"
+                :clipped="$vuetify.breakpoint.lgAndUp"
+            >
+                <div>
+                    botones
+                </div>
+            </v-navigation-drawer>
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp">
+                <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+                <v-toobar-title v-text="title"></v-toobar-title>
+            </v-app-bar>
+            <v-main>
+                <nuxt/>
+            </v-main>
+        </v-app>
+    </template>
+
+    <script>
+    export default {
+        name: 'DefaultLayout',
+        data () {
+            return {
+                drawer: false,
+                title: "Soluciones++"
+            }
+        }
+    }
+    </script>
+    ```
+
+### 75. Componente footer vuetify
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+            <v-footer padless>
+                <v-row justify="center" no-gutters>
+                    <v-btn color="primary" small icon><v-icon>mdi-facebook</v-icon></v-btn>
+                    <v-btn color="primary" small icon><v-icon>mdi-instagram</v-icon></v-btn>
+                    <v-btn color="primary" small icon><v-icon>mdi-pinterest</v-icon></v-btn>
+                    <v-btn color="primary" small icon><v-icon>mdi-twitter</v-icon></v-btn>
+                    <v-col class="text-center primary--text" cols="12">
+                        &copy; {{ new Date().getFullYear() + '-' + title }}
+                    </v-col>
+                </v-row>
+            </v-footer>
+        </v-app>
+    </template>
+    ≡
+    ```
+
+### 76. Instalación de APOLLO y GraphQL tag
++ https://github.com/nuxt-community/apollo-module
+1. En una terminal de Microsoft Windows y ubicados en la raíz del proyecto **frontend** ejecutar la siguiente instrucción para instalar el módulo de Apollo:
+    + $ npm install --save @nuxtjs/apollo
+2. Modificar archivo de configuración de Nuxt.js **frontend\nuxt.config.js**:
+    ```js
+    ≡
+    // Modules: https://go.nuxtjs.dev/config-modules
+    modules: [
+        '@nuxtjs/apollo'
+    ],
+
+    apollo: {
+        clientConfigs: {
+            default: {
+                httpEndpoint: 'http://localhost:1337/graphql',
+            }
+        }
+    },
+    ≡
+    ```
+3. Instalar graphql-tag para poder leer archivo *.graphql:
+    + $ npm install --save graphql-tag
+
+### 77. Archivos del proyecto sección 6
++ Repositorio de esta sección: **00recursos\Section_06_inicio_proyecto.zip**.
+
+
+## Sección 7: Comunicación Nuxt con Strapi (Apollo + GraphQL)
+### 78. Sitios web visitados en la sección
 1 min
+
 
 
 
@@ -1747,27 +1948,8 @@
 
 
 
-### 70. Nuxt y Vuetify
-2 min
-### 71. Configurar el proyecto
-2 min
-### 72. Vuetify
-4 min
-### 73. Módulos de Nuxt
-2 min
-### 74. Componente de navegación vuetify
-6 min
-### 75. Componente footer vuetify
-5 min
-### 76. Instalación de APOLLO y GraphQL tag
-3 min
-### 77. Archivos del proyecto sección 6
-1 min
 
 
-## Sección 7: Comunicación Nuxt con Strapi (Apollo + GraphQL)
-### 78. Sitios web visitados en la sección
-1 min
 ### 79. Preparar el pedido
 1 min
 ### 80. Componente ApolloQuery
@@ -2025,9 +2207,23 @@
 
 
 ## Comandos comunes:
-1. Ejecutar **my-app**:
+1. Ejecutar **my-app** en desarrollo:
     + $ cd my-app
     + $ npm run dev
-2. Para levantar el **backend**:
+2. Ejecutar **my-app** en producción:
+    + $ cd my-app
+    + $ npm run build
+    + $ npm run start
+3. Ejecutar **frontend** en desarrollo:
+    + $ cd frontend
+    + $ npm run dev
+4. Ejecutar **frontend** en producción:
+    + $ cd frontend
+    + $ npm run build
+    + $ npm run start
+5. Para levantar el **backend**:
     + $ cd backend
     + $ npm run develop
+6. Para ingresar al panel administrativo de **Starpi**:
+    + http://localhost:1337/admin
+    + **Nota**: el servidor **backend** debe estar levantado.
