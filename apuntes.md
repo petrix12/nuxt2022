@@ -1933,7 +1933,1106 @@
 
 ## Sección 7: Comunicación Nuxt con Strapi (Apollo + GraphQL)
 ### 78. Sitios web visitados en la sección
++ Material de apoyo:
+    + https://apollo.vuejs.org/guide/apollo
+    + https://nuxtjs.org/docs/concepts/context-helpers
+    + https://nuxtjs.org/docs/2.x/features/data-fetching#async-data
+    + https://nuxtjs.org/docs/2.x/concepts/nuxt-lifecycle
+    + https://docs.strapi.io/developer-docs/latest/developer-resources/database-apis-reference/graphql-api.html
+
+### 79. Preparar el pedido
+1. En el Playground realizar petición GraphQL:
+    ```graphql
+    query {
+        categories {
+            data {
+                id
+                attributes {
+                    name
+                    icon
+                    slug
+                    img
+                }
+            }
+        }
+    }
+    ```
+
+### 80. Componente ApolloQuery
+1. Modificar página **frontend\pages\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <ApolloQuery :query="query">
+                <template slot-scope="{result:{ data, loading, error }}">
+                    <div v-if="loading">Cargando datos...</div>
+                    <div v-else-if="error">{{ error }}</div>
+                    <div v-else>
+                        <div v-for="category in data.categories.data" :key="category.id">
+                            Nombre: {{category.attributes.name}}
+                        </div>
+                    </div>
+                </template>
+            </ApolloQuery>
+        </v-container>
+    </template>
+
+    <script>
+    import gql from "graphql-tag"
+
+    export default {
+        data(){
+            return {
+                query: gql`
+                    query {
+                        categories {
+                            data {
+                                id
+                                attributes {
+                                    name
+                                    icon
+                                    slug
+                                    img
+                                }
+                            }
+                        }
+                    }
+                `
+            }
+        }
+    }
+    </script>
+    ```
+
+### 81. Cambios Query V4 Strapi
++ Como la indexación de GraphQL ha cambiado en la versión 4 de Strapi debemos cambiar un poco el código para poder acceder a los valores que queremos.
++ El GraphQL (recuerda que en la documentación de tu playground puedes ver cómo hacer el pedido):
+    ```graphql
+    query{
+        categories{
+            data{
+                id
+                attributes{
+                    name
+                    icon
+                    slug
+                    img
+                }
+            }
+        }
+    }
+    ```
++ Con esta nueva forma el id y los atributos están separados por lo que se debe hacer un cambio en el bucle:
+    ```vue
+    ≡
+    <ApolloQuery :query="query">
+        <template slot-scope="{result:{data}}">
+            <div v-for="category in data.categories.data" :key="category.id">
+                nombre: {{category.attributes.name}}
+            </div>
+        </template>
+    </ApolloQuery>
+    ≡
+    ```
+
+### 82. Objeto apollo
+1. Modificar página **frontend\pages\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            {{ categories }}
+
+            <v-divider class="my-5"></v-divider>
+
+            <ApolloQuery :query="query">
+                ≡
+            </ApolloQuery>
+        </v-container>
+    </template>
+
+    <script>
+    ≡
+
+    export default {
+        data(){
+            ≡
+        },
+        apollo: {
+            categories: {
+                query: gql`
+                    query {
+                        categories {
+                            data {
+                                id
+                                attributes {
+                                    name
+                                    icon
+                                    slug
+                                    img
+                                }
+                            }
+                        }
+                    }
+                `,
+                // En caso de que por una extraña razon se desee cambiar 
+                // el nombre a categories por cat o cualquier otro, se deberá 
+                // agregar la siguiente línea de código:
+                // update: data => data.categories
+            }
+        }
+    }
+    </script>
+    ≡
+    ```
+
+### 83. Centralizar pedidos GraphQL
+1. Crear archivo **frontend\graphql\querys.js** para centralizar los querys del proyecto:
+    ```js
+    import gql from 'graphql-tag'
+
+    export const categorias = gql`
+        query {
+            categories {
+                data {
+                    id
+                    attributes {
+                        name
+                        icon
+                        slug
+                        img
+                    }
+                }
+            }
+        }
+        `
+    ```
+2. Modificar página **frontend\pages\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <!-- {{ categories }} -->
+
+            <v-divider class="my-5"></v-divider>
+
+            <ApolloQuery :query="query">
+                <template slot-scope="{result:{ data, loading, error }}">
+                    <div v-if="loading">Cargando datos...</div>
+                    <div v-else-if="error">{{ error }}</div>
+                    <div v-else>
+                        <div v-for="category in data.categories.data" :key="category.id">
+                            <v-btn 
+                                :to="{ name: 'category', params: {category: category.attributes.slug}}"
+                                class="my-1"
+                            >{{category.attributes.name}}</v-btn> 
+                        </div>
+                    </div>
+                </template>
+            </ApolloQuery>
+        </v-container>
+    </template>
+
+    <script>
+    import { categorias } from "../graphql/querys"
+
+    export default {
+        data(){
+            return {
+                query: categorias
+            }
+        },
+        /* apollo: {
+            categories: {
+                query: categorias,
+                // update: data => data.categories
+            }
+        } */
+    }
+    </script>
+    ```
+3. Crear página **frontend\pages\\_category\index.vue**:
+    ```vue
+    <template>
+        <div>
+            {{ $route.params.category }}
+        </div>
+    </template>
+    ```
+
+### 84. Pasar variables con Apollo
+1. Realizar petición GraphQL en Playground:
+    ```graphql
+    query($id:ID!) {
+        category (id: $id){
+            data {
+                id
+                attributes {
+                    description
+                }
+            }
+        }
+    }
+    ```
+    Query Variables:
+    ```json
+    {
+        "id": 2
+    }
+    ```
+2. Modificar página **frontend\pages\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+
+            <v-divider class="my-5"></v-divider>
+
+            <ApolloQuery :query="query">
+                <template slot-scope="{result:{ data, loading, error }}">
+                    <div v-if="loading">Cargando datos...</div>
+                    <div v-else-if="error">{{ error }}</div>
+                    <div v-else>
+                        <div v-for="category in data.categories.data" :key="category.id">
+                            <v-btn 
+                                :to="{ 
+                                    name: 'category', 
+                                    params: {category: category.attributes.slug},
+                                    query: {category: category.id}
+                                }"
+                                class="my-1"
+                            >{{category.attributes.name}}</v-btn> 
+                        </div>
+                    </div>
+                </template>
+            </ApolloQuery>
+        </v-container>
+    </template>
+
+    <script>
+    import { categorias } from "../graphql/querys"
+
+    export default {
+        data(){
+            return {
+                query: categorias
+            }
+        }
+    }
+    </script>
+    ```
+3. Modificar página **frontend\pages\\_category\index.vue**:
+    ```vue
+    <template>
+        <div>
+            {{ $route.params.category }}
+            {{ category }}
+        </div>
+    </template>
+
+    <script>
+    import { category } from "../../graphql/querys"
+
+    export default {
+        data() {
+            return{
+                query: ''
+            }
+        },
+        apollo: {
+            category:{
+                query:category,
+                variables(){
+                    return { id: this.$route.query.category }
+                }
+            }
+        }
+    }
+    </script>
+    ```
+4. Modificar **frontend\graphql\querys.js**:
+    ```js
+    ≡
+    export const category = gql`
+        query($id:ID!) {
+            category (id: $id){
+                data {
+                    id
+                    attributes {
+                        description
+                    }
+                }
+            }
+        }
+        `
+    ```
+
+### 85. Pasar Variables V4 Strapi
++ Recuerda que la estructura cambia ya que se debe agregar la propiedad de atributos.
++ El id se sigue llamando en primera línea:
+    ```graphql
+    query($id:ID!){
+        category(id:$id){
+            data{
+                id
+                attributes{
+                    description
+                }
+            }
+        }
+    }
+    ```
+
+### 86. Carpeta Store / Vuex
+1. Crear tienda **frontend\store\index.js**:
+    ```js
+    export const state = () => ({
+        counter: 0 
+    })
+
+    export const getters = {
+        readCounter(state){
+            return state.counter
+        }
+    }
+
+    export const mutations = {
+        increment(state){
+            state.counter++
+        }
+    }
+
+    export const actions = {
+        increment(context){
+            setTimeout(() => {
+                context.commit("increment")
+            }, 1000)
+        }
+    }
+    ```
+
+### 87. Store
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            <v-navigation-drawer 
+                ≡
+            >
+                <div>
+                    botones {{ counter }}
+                </div>
+            </v-navigation-drawer>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    export default {
+        ≡
+        computed: {
+            counter() {
+                return this.$store.getters.readCounter
+            }
+        }
+    }
+    </script>
+    ≡
+    ```
+2. Modificar página **frontend\pages\\_category\index.vue**:
+    ```vue
+    <template>
+        <div>
+            ≡
+            <div>
+                {{ counter }}
+                <v-btn @click="callMutation()">Mutation</v-btn>
+                <v-btn @click="callAction()">Action</v-btn>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    import { category } from "../../graphql/querys"
+
+    export default {
+        ≡
+        methods: {
+            callMutation(){
+                this.$store.commit("increment")
+            },
+            callAction(){
+                this.$store.dispatch("increment")
+            }
+        },
+        apollo: {
+            ≡
+        }
+    }
+    </script>
+    ```
+
+### 88. El contexto de Nuxt
++ **Contenido**: sobre el contexto de Nuxt.js.
+
+### 89. Pedidos con AsynData
+1. Crear archivo GraphQL **frontend\graphql\categories.gql**:
+    ```graphql
+    query {
+        categories{
+            data {
+                id
+                attributes {
+                    name
+                    icon
+                    img
+                    description
+                    slug
+                }
+            }
+        }
+    }
+    ```
+2. Modificar page **frontend\pages\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <!-- {{ categories }} -->
+
+            <v-divider class="my-5"></v-divider>
+
+            <div v-for="category in categories.data" :key="category.id">
+                <v-btn 
+                    :to="{ 
+                        name: 'category', 
+                        params: {category: category.attributes.slug},
+                        query: {category: category.id}
+                    }"
+                    class="my-1"
+                >{{category.attributes.name}}</v-btn> 
+            </div>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return {
+            }
+        },
+        async asyncData(context) {
+            const client = context.app.apolloProvider.defaultClient
+            // Si se trabaja con Axios la constante client de la instrucción anterior se puede obtener mediante este.
+            const query = {
+                query: require("../graphql/categories.gql")
+            }
+            let categories = []
+            await client.query(query).then(data => {
+                console.log(data)
+                categories = data.data.categories
+            })
+            return {categories}
+        }
+    }
+    </script>
+    ```
+
+### 90. Organizar datos versión 4 de Strapi
++ Comentarios del autor: 
+    + En la versión 3 tenemos todos los datos en un mismo nivel del objeto y en la versión 4 los tenemos anidados.
+    + Personalmente me gusta más utilizar los datos como en la versión 3. Una vez tengo la respuesta puedo organizar los datos para utilizarlos más fácil:
+    ```js
+    ≡
+    async asyncData(context) {
+        const client = context.app.apolloProvider.defaultClient
+        const query = {
+            query:require("../graphql/categories.gql")
+        }
+        let categories = []
+        await client.query(query).then(res => {
+            //en consola puedes ver el resultado de tu query
+            console.log(res)
+            //quiero entrar hasta el array que contiene toda la información
+            //y hacer un bucle en cada uno de los resultados
+            res.data.categories.data.forEach(category => {
+                //agrego a mi array de categorias cada uno de los valores
+                //organizandolos al mismo nivel con ayuda del spread operator donde copio todos los atributos
+                categories.push({id:category.id, ...category.attributes })
+            })
+        })
+        return {categories}
+    }
+    ≡
+    ```
++ **Nota**: Esto es solo una opción recuerda que en tu código tu eres el que elige como trabajar con los datos.
+
+### 91. Pedidos con fetch
+1. Modificar page **frontend\pages\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <v-divider class="my-5"></v-divider>
+            {{ $fetchState }}
+            <div v-if="$fetchState.pending">Cargando datos...</div>
+            <div v-else-if="$fetchState.error">{{ $fetchState.error }}</div>
+            <div v-else>
+                <div v-for="category in categories.data" :key="category.id">
+                    <v-btn 
+                        :to="{ 
+                            name: 'category', 
+                            params: {category: category.attributes.slug},
+                            query: {category: category.id}
+                        }"
+                        class="my-1"
+                    >{{category.attributes.name}}</v-btn> 
+                </div>
+            </div>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return {
+                categories: []
+            }
+        },
+        async fetch(){
+            // const client = this.$apollo.getClient()
+            const query = {
+                query: require("../graphql/categories.gql")
+            }
+            await this.$apollo.query(query).then(data => {
+                console.log(data)
+                this.categories = data.data.categories
+            })
+        }
+    }
+    </script>
+    ```
+
+### 92. Función NuxtServerInit
+1. Modificar page **frontend\pages\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <v-divider class="my-5"></v-divider>
+            <div>
+                <div v-for="category in categories.data" :key="category.id">
+                    <v-btn 
+                        :to="{ 
+                            name: 'category', 
+                            params: {category: category.attributes.slug},
+                            query: {category: category.id}
+                        }"
+                        class="my-1"
+                    >{{category.attributes.name}}</v-btn> 
+                </div>
+            </div>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return {
+            }
+        },
+        computed: {
+            categories(){
+                return this.$store.getters.readCategories
+            }
+        }
+    }
+    </script>
+    ```
+2. Modificar tienda **frontend\store\index.js**:
+    ```js
+    export const state = () => ({
+        ≡
+        categories: []
+    })
+
+    export const getters = {
+        readCategories(state){
+            return state.categories
+        },
+        ≡
+    }
+
+    export const mutations = {
+        addCategories(state, payload){
+            state.categories = payload
+        },
+        ≡
+    }
+
+    export const actions = {
+        async nuxtServerInit({commit}){
+            console.log('Hola Nuxt Server')
+            // return new Promise((resolve, reject) => {
+            const client = this.app.apolloProvider.defaultClient
+            const query = {
+                query: require('../graphql/categories.gql')
+            }
+            await client.query(query).then(data => {
+                commit('addCategories', data.data.categories)
+                console.log(data)
+                // resolve()
+            }).catch(error => {
+                console.log(error)
+                // reject()
+            })
+            // })
+        },
+        ≡
+    }
+    ```
+
+### 93. Organizar datos Mutación Versión 4 Strapi
++ En el store(vuex) voy a organizar los datos para ponerlos en el mismo nivel de indexación.
++ En la función de nuxtServerInit una vez tengo la respuesta y llamo la mutación, le voy a pasar directamente el array que contiene cada una de las categorías:
+    ```js
+    ≡
+    ....          
+    await client.query(query).then(data => {
+            //llamo la mutación y envio solo el array como payload
+            commit('addCategories', data.data.categories.data)
+    })......
+    ≡
+    ```
++ En la mutación como recibo un array voy a hacer un bucle para organizar cada uno de los datos, de esta forma en mis getters puedo obtener y utilizar los datos de la forma que yo quiero:
+    ```js
+    ≡
+    addCategories(state, payload){
+        const categories = []
+        payload.forEach(element => {
+            categories.push({id:element.id, ...element.attributes})
+        });
+        state.categories = categories
+    }
+    ≡
+    ```
+
+### 94. Ciclo de vida de Nuxt
++ **Contenido**: sobre el ciclo de vida de Nuxt.js.
+
+### 95. Crear el GraphQL para recetas
+1. Modificar page **frontend\pages\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <v-divider class="my-5"></v-divider>
+            <div>
+                <div v-for="category in categories.data" :key="category.id">
+                    <v-btn 
+                        :to="{ 
+                            name: 'category', 
+                            params: {category: category.attributes.slug}
+                        }"
+                        class="my-1"
+                    >{{category.attributes.name}}</v-btn> 
+                </div>
+            </div>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        ≡
+    }
+    </script>
+    ```
+2. Realizar petición GraphQL en Playground:
+    ```graphql
+    query($slug:String!) {
+        recipes(filters:{category:{slug:{eq:$slug}}}){
+            data {
+                id
+                attributes {
+                    name
+                  	likes
+                  	category{
+                      data{
+                        id
+                        attributes {
+                          name
+                          slug
+                        }
+                      }
+                    }
+                }
+            }
+        }
+    }
+    ```
+    Query Variables:
+    ```json
+    {
+        "slug": "aperitivos"
+    }
+    ```
+3. Crear archivo GraphQL **frontend\graphql\recipes.gql**:
+    ```graphql
+    query($slug:String!) {
+        recipes(filters:{category:{slug:{eq:$slug}}}){
+            data {
+                id
+                attributes {
+                    name
+                    likes
+                    category{
+                        data{
+                        id
+                        attributes {
+                            name
+                            slug
+                        }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+### 96. GraphQL filtro receta por slug versión 4 de Strapi
++ Filtros en la versión 4:
+    + El where es remplazado por la palabra clave filters que tiene como valor un objeto con las especificaciones del filtro.
+    + filters: { field: { operator: value } }
+    + GraphQL filtro por slug en recetas, recuerda que en la V4 se agrega data y attributes:
+        ```graphql
+        query($slug:String!){
+            recipes(filters:{category:{slug:{eq:$slug}}}){
+                data{
+                    id
+                    attributes{
+                        name
+                        likes 
+                        category{
+                            data{
+                                id
+                                attributes{
+                                    name
+                                    slug
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ```
+    + Filtramos por la colección categoría donde el campo slug sea igual al valor del $slug que estamos pasando en una variable. La palabra eq significa igual.
++ **Nota**: En la sección 9 Opción de Búsqueda en el cliente, vamos a profundizar en los filtros de Strapi/GraphQL en la versiones 3 y 4
+
+### 97. Cargar las recetas
+1. Modificar page **frontend\pages\\_category\index.vue**:
+    ```vue
+    <template>
+        <div>
+            {{ recipes }}
+            <div v-for="recipe in recipes" :key="recipe.id">
+                {{ recipe.attributes.name }}
+            </div>
+            <v-divider></v-divider>
+            <nuxt-link to="/">Volver</nuxt-link>
+        </div>
+    </template>
+
+    <script>
+
+    export default {
+        data() {
+            return{
+            }
+        },
+        async asyncData({app, route}){
+            const slug = route.params.category
+            const client = app.apolloProvider.defaultClient
+            const query = {
+                query: require('../../graphql/recipes.gql'),
+                variables: { slug }
+            }
+            let recipes = []
+            await client.query(query).then(data => {
+                recipes = data.data.recipes.data
+            }).catch(e => console.log(e))
+            return { recipes }
+        }
+    }
+    </script>
+    ```
+
+### 98. Organizar datos de la respuesta Version 4 Strapi/GraphQL
++ Como estamos haciendo un pedido con relaciones (Receta y al interior la categoría) obtenemos un doble objeto con propiedades data y attributes.
++ Para mejorar la utilización, voy a poner los datos al mismo nivel:
+    ```js
+    async asyncData({app, route}){
+        const slug = route.params.category
+        const client = app.apolloProvider.defaultClient
+        const query = {
+            query:require("../../graphql/recipes.gql"),
+            variables:{slug}
+        }
+        let recipes = []
+        await client.query(query).then(res => {
+            //en consola puedes ver el resultado de tu query y analizar su estructura
+            console.log(res)
+            res.data.recipes.data.forEach(element => {
+                //creo un nuevo objeto con el formato deseado
+                const recipe = {
+                    id:element.id,
+                    name:element.attributes.name,
+                    likes:element.attributes.likes,
+                    //en la propiedad category conservo un objeto
+                    //pero filtro las propiedades data y attributos para facil uso
+                    category:{id:element.attributes.category.data.id, 
+                        ...element.attributes.category.data.attributes}
+                }
+                //recuerda analizar los datos que recibes en la respuesta
+                recipes.push(recipe)
+            });
+        }).catch(e => console.log(e))
+    
+        return { recipes }
+    }
+    ```
++ El resultado es algo como esto:
+    ```js
+    [ 
+        { 
+            "id": "4",
+            "name": "Galletas", 
+            "likes": 0, 
+            "category": { "id": "1", "name": "Aperitivos", "slug": "aperitivos", "__typename": "Category" } 
+        } 
+    ]
+    ```
+
+### 99. Cargar una sola entrada
+1. Realizar petición GraphQL en Playground:
+    ```graphql
+    query($id:ID!) {
+        recipe(id:$id){
+            data {
+                id
+                attributes {
+                    name
+                  	duration
+                  	servings
+                  	img
+                  	description
+                  	ingredients
+                  	steps
+                  	likes
+                  	category{
+                        data{
+                            id
+                            attributes {
+                                name
+                                slug
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+    Query Variables:
+    ```json
+    {
+        "id": 3
+    }
+    ```
+
+2. Crear archivo GraphQL **frontend\graphql\recipe.gql**:
+    ```graphql
+    query($id:ID!) {
+        recipe(id:$id){
+            data {
+                id
+                attributes {
+                    name
+                  	duration
+                  	servings
+                  	img
+                  	description
+                  	ingredients
+                  	steps
+                  	likes
+                  	category{
+                        data{
+                            id
+                            attributes {
+                                name
+                                slug
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+### 100. GraphQL Strapi V4
++ Consulta para receta en Strapi V4
+
+    ```graphql
+    query($id:ID!){
+        recipe(id:$id){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                    servings
+                    img
+                    description
+                    ingredients
+                    steps
+                    likes
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                                slug
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+### 101. Detalles de la receta
+1. Crear page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```vue
+    <template>
+        <div>
+            Receta: {{recipe}}
+        </div>
+    </template>
+
+    <script>
+    export default {
+        async asyncData({app, route}){
+            const client = app.apolloProvider.defaultClient
+            const id = route.params.recipe
+            const query = {
+                query: require('../../../graphql/recipe.gql'),
+                variables: {id}
+            }
+            let recipe = null
+            await client.query(query).then(data => {
+                recipe = data.data.recipe.data
+            }).catch(e => console.log(e))
+            return {recipe}
+        }
+    }
+    </script>
+    ```
+2. Modificar page **frontend\pages\\_category\index.vue**:
+    ```vue
+    <template>
+        <div>
+            {{ recipes }}
+            <div v-for="recipe in recipes" :key="recipe.id">
+                <nuxt-link
+                    :to="{
+                        name: 'category-recipe',
+                        params: { 
+                            category: $route.params.category,
+                            recipe: recipe.id
+                        }
+                    }"
+                >
+                    {{ recipe.attributes.name }}
+                </nuxt-link>
+            </div>
+            <v-divider></v-divider>
+            <nuxt-link to="/">Volver</nuxt-link>
+        </div>
+    </template>
+
+    <script>
+
+    export default {
+        data() {
+            return{
+            }
+        },
+        async asyncData({app, route}){
+            const slug = route.params.category
+            const client = app.apolloProvider.defaultClient
+            const query = {
+                query: require('../../graphql/recipes.gql'),
+                variables: { slug }
+            }
+            let recipes = []
+            await client.query(query).then(data => {
+                recipes = data.data.recipes.data
+            }).catch(e => console.log(e))
+            return { recipes }
+        }
+    }
+    </script>
+    ```
+
+### 102. Organizar datos de la respuesta Version 4 Strapi/GraphQL
++ Nota del autor: Tu puedes utilizar los datos como los trae la respuesta en la versión 4, solo recuerda que al momento de acceder a los datos en el template tu estructura será diferente a la mía en los videos.
++ O aplicar esta modificación y utilizar la misma estructura:
+    ```js
+    ≡
+    async asyncData({ app, route }) {
+        const client = app.apolloProvider.defaultClient;
+        const id = route.params.recipe;
+        const query = {
+            query: require("../../../graphql/recipe.gql"),
+            variables: { id },
+        };
+        let recipe = null;
+        await client
+            .query(query)
+            .then((res) => {
+                //recuerda analizar los datos en consola
+                console.log(res.data.recipe.data)
+                //capturo el id de recipe data
+                const id = res.data.recipe.data.id
+                //separo los attributos
+                const attributes = res.data.recipe.data.attributes
+                //a recipe le doy un nuevo valor organizando el objeto a mi medida
+                //este es el objeto utilizado para renderizar la UI
+                recipe = {
+                    id,
+                    name:attributes.name,
+                    duration:attributes.duration,
+                    servings:attributes.servings,
+                    img:attributes.img,
+                    description:attributes.description,
+                    ingredients:attributes.ingredients,
+                    steps:attributes.steps,
+                    likes:attributes.likes,
+                    category:{id:attributes.category.data.id, ...attributes.category.data.attributes}
+                }
+            })
+            .catch((e) => console.log(e));
+        return { recipe };
+    }
+    ≡
+    ```
+
+### 103. Archivos del proyecto sección 7
++ Repositorio autor: **00recursos\Section_07_querys.zip**.
+
+
+## Sección 8: Estilos gráficos con Vuetify y Componentes Nuxt
+### 104. Sitios web visitados en la sección
 1 min
+
+
+
 
 
 
@@ -1946,62 +3045,14 @@
     ```
 
 
+    ```graphql
+    ≡
+    ≡
+    ```
 
 
 
 
-### 79. Preparar el pedido
-1 min
-### 80. Componente ApolloQuery
-5 min
-### 81. Cambios Query V4 Strapi
-1 min
-### 82. Objeto apollo
-3 min
-### 83. Centralizar pedidos GraphQL
-4 min
-### 84. Pasar variables con Apollo
-6 min
-### 85. Pasar Variables V4 Strapi
-1 min
-### 86. Carpeta Store / Vuex
-4 min
-### 87. Store
-4 min
-### 88. El contexto de Nuxt
-2 min
-### 89. Pedidos con AsynData
-5 min
-### 90. Organizar datos versión 4 de Strapi
-1 min
-### 91. Pedidos con fetch
-5 min
-### 92. Función NuxtServerInit
-7 min
-### 93. Organizar datos Mutación Versión 4 Strapi
-1 min
-### 94. Ciclo de vida de Nuxt
-2 min
-### 95. Crear el GraphQL para recetas
-3 min
-### 96. GraphQL filtro receta por slug versión 4 de Strapi
-1 min
-### 97. Cargar las recetas
-5 min
-### 98. Organizar datos de la respuesta Version 4 Strapi/GraphQL
-1 min
-### 99. Cargar una sola entrada
-2 min
-### 100. GraphQL Strapi V4
-1 min
-### 101. Detalles de la receta
-5 min
-### 102. Organizar datos de la respuesta Version 4 Strapi/GraphQL
-1 min
-### 103. Archivos del proyecto sección 7
-1 min
-### 104. Sitios web visitados en la sección
-1 min
 ### 105. Componente v-list de vuefify
 6 min
 ### 106. Auto importación de componentes
@@ -2022,6 +3073,9 @@
 3 min
 ### 114. Archivos del proyecto sección 8
 1 min
+
+
+## Sección 9: Opción de Búsqueda en el cliente
 ### 115. Sitios web visitados en la sección
 1 min
 ### 116. Campo de búsqueda
