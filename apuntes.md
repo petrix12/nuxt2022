@@ -2649,6 +2649,7 @@
                 attributes {
                     name
                   	likes
+                    img
                   	category{
                       data{
                         id
@@ -2678,6 +2679,7 @@
                 attributes {
                     name
                     likes
+                    img
                     category{
                         data{
                         id
@@ -2705,7 +2707,8 @@
                     id
                     attributes{
                         name
-                        likes 
+                        likes
+                        img
                         category{
                             data{
                                 id
@@ -3029,10 +3032,539 @@
 
 ## Sección 8: Estilos gráficos con Vuetify y Componentes Nuxt
 ### 104. Sitios web visitados en la sección
++ Material de apoyo.
+    + https://vuetifyjs.com/en/components/lists
+    + https://vuetifyjs.com/en/components/cards
+    + https://vuetifyjs.com/en/components/chips
+    + https://vuetifyjs.com/en/components/timelines
+
+
+### 105. Componente v-list de vuefify
++ https://vuetifyjs.com/en/components/lists
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            <v-navigation-drawer 
+                app
+                v-model="drawer"
+                :clipped="$vuetify.breakpoint.lgAndUp"
+                color="grey lighten-4"
+            >
+                <v-list color="primary--text">
+                    <v-list-item to="/">
+                        <v-list-item-icon>
+                            <v-icon>mdi-home</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                            <v-list-item-title>
+                                Inicio
+                            </v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                    <v-list-item
+                        v-for="link in links.data"
+                        :key="link.id"
+                        :to="{name:'category', params: {category: link.attributes.slug}}"
+                    >
+                        <v-list-item-icon>
+                            <v-icon>{{ link.attributes.icon }}</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                            <v-list-item-title>
+                                {{ link.attributes.name }}
+                            </v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-navigation-drawer>
+
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+                <v-toolbar-title v-text="title"></v-toolbar-title>
+            </v-app-bar>
+            
+
+            <v-main class="grey lighten-4">
+                <nuxt/>
+            </v-main>
+
+            <v-footer padless>
+                <v-row justify="center" no-gutters>
+                    <v-btn color="primary" small icon> <v-icon>mdi-facebook</v-icon> </v-btn>
+                    <v-btn color="primary" small icon> <v-icon>mdi-instagram</v-icon> </v-btn>
+                    <v-btn color="primary" small icon> <v-icon>mdi-pinterest</v-icon> </v-btn>
+                    <v-btn color="primary" small icon> <v-icon>mdi-twitter</v-icon> </v-btn>
+                    <v-col class="text-center primary--text" cols="12">
+                        &copy; {{new Date().getFullYear()}} - Soluciones++
+                    </v-col>
+                </v-row>
+            </v-footer>
+        </v-app>
+    </template>
+
+    <script>
+    export default {
+        name: 'DefaultLayout',
+        data () {
+            return {
+                drawer: false,
+                title: "Soluciones++"
+            }
+        },
+        computed: {
+            links(){
+                return this.$store.getters.readCategories
+            }
+        }
+    }
+    </script>
+    ```
+
+### 106. Auto importación de componentes
+1. Crear componente **frontend\components\ui\NavCard.vue**:
+    ```vue
+    <template>
+        <div>
+            Sol++ Navcard
+        </div>
+    </template>
+    ```
+2. Modificar página	**frontend\pages\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <app-ui-nav-card></app-ui-nav-card>
+            <app-forms-login></app-forms-login>
+
+            <v-divider class="my-5"></v-divider>
+            <div>
+                <div v-for="category in categories.data" :key="category.id">
+                    <v-btn 
+                        :to="{ 
+                            name: 'category', 
+                            params: {category: category.attributes.slug}
+                        }"
+                        class="my-1"
+                    >{{category.attributes.name}}</v-btn> 
+                </div>
+            </div>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return {
+            }
+        },
+        computed: {
+            categories(){
+                return this.$store.getters.readCategories
+            }
+        }
+    }
+    </script>
+    ```
+3. Crear componente **frontend\components\forms\Login.vue**:
+    ```vue
+    <template>
+        <div>
+            Login
+        </div>
+    </template>
+    ```
+4. Modificar **frontend\nuxt.config.js**:
+    ```js
+    ≡
+    // Auto import components: https://go.nuxtjs.dev/config-components
+    components: [
+        {path: '~/components', prefix: 'app'}
+    ],
+    ≡
+    ```
+    **Nota**: ahora todos los componente de la aplicación se deberán llamar como **<app-XXXXXXX>**.
+
+### 107. Componente V-card
++ https://vuetifyjs.com/en/components/cards
+1. Modificar page **frontend\pages\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <v-row>
+                <v-col cols="3" v-for="category in categories.data" :key="category.id">
+                    <app-ui-nav-card :category="category"></app-ui-nav-card>
+                </v-col>
+            </v-row>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return {
+            }
+        },
+        computed: {
+            categories(){
+                return this.$store.getters.readCategories
+            }
+        }
+    }
+    </script>
+    ```
+2. Modificar componente **frontend\components\ui\NavCard.vue**:
+    ```vue
+    <template>
+        <v-card :to="{name: 'category', params: {category: category.attributes.slug }}">
+            <v-img :src="category.attributes.img || 'https://cdn.pixabay.com/photo/2020/02/11/15/41/shrimp-4839919_960_720.jpg'" height="170"></v-img>
+            <v-card-title class="body-1">
+                {{ category.attributes.name }}
+                <v-icon class="ml-2" color="primary">{{ category.attributes.icon }}</v-icon>
+            </v-card-title>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        props: {
+            category: {
+                type: Object,
+                required: true
+            }
+        }
+    }
+    </script>
+    ```
+
+### 108. Tarjetas de recetas
+1. Modificar page **frontend\pages\\_category\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <h1 class="secondary--text">
+                {{ category.attributes.name }}
+                <v-icon large class="secondary--text">{{ category.attributes.icon }}</v-icon>
+            </h1>
+            <p class="secondary--text">{{ category.attributes.description }}</p>
+            <v-row>
+                <v-col cols="4" v-for="recipe in recipes" :key="recipe.id">
+                    <app-ui-nav-card-recipe></app-ui-nav-card-recipe>
+                </v-col>
+            </v-row>
+
+            <v-divider></v-divider>
+
+            <nuxt-link to="/">Volver</nuxt-link>
+        </v-container>
+    </template>
+
+    <script>
+
+    export default {
+        ≡
+        computed: {
+            category() {
+                const slug = this.$route.params.category
+                return this.$store.getters.readCategories.data.find(item => item.attributes.slug == slug)
+            }
+        },
+        ≡
+    }
+    </script>
+    ≡
+    ```
+2. Crear componente **frontend\components\ui\NavCardRecipe.vue**:
+    ```vue
+    <template>
+        <div>
+            Receta
+        </div>
+    </template>
+    ```
+
+### 109. Tarjeta receta
+1. Modificar componente **frontend\components\ui\NavCardRecipe.vue**:
+    ```vue
+    <template>
+        <v-card 
+            :to="{
+                name: 'category-recipe',
+                params: { 
+                    category: recipe.attributes.category.data.attributes.slug,
+                    recipe: recipe.id
+                }
+            }"
+        >
+            <v-img :src="recipe.attributes.img" height="170"></v-img>
+            <v-card-text>
+                <v-row>
+                    <v-col cols="7"><h3>{{ recipe.attributes.name }}</h3></v-col>
+                    <v-col cols="5" class="d-flex justify-end">
+                        <div>
+                            <v-icon>mdi-heart</v-icon>
+                            <span>{{ recipe.attributes.likes }}</span>
+                        </div>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        props: {
+            recipe: {
+                type: Object,
+                required: true
+            }
+        }
+    }
+    </script>
+    ```
+2. Modificar page **frontend\pages\\_category\index.vue**:
+    ```vue
+    ≡
+    <p class="secondary--text">{{ category.attributes.description }}</p>
+    <v-row>
+        <v-col cols="4" v-for="recipe in recipes" :key="recipe.id">
+            <app-ui-nav-card-recipe :recipe="recipe"></app-ui-nav-card-recipe>
+        </v-col>
+    </v-row>
+    ≡
+    ```
+
+### 110. Botón volver
+1. Crear componente **frontend\components\ui\BackBtn.vue**:
+    ```vue
+    <template>
+        <v-btn small color="primary" @click="back()">{{ label }}</v-btn>
+    </template>
+
+    <script>
+    export default {
+        props: {
+            label: {
+                type: String,
+                default: 'Volver'
+            }
+        },
+        methods: {
+            back(){
+                this.$router.go(-1)
+            }
+        }
+    }
+    </script>
+    ```
+2. Modificar page **frontend\pages\\_category\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            ≡
+            <div class="mt-3">
+                <v-alert type="info" v-if="recipes.length == 0">
+                    <p>No hay recetas disponibles</p>
+                </v-alert>
+            </div>
+
+            <div class="mt-3">
+                <app-ui-back-btn></app-ui-back-btn>
+            </div>
+        </v-container>
+    </template>
+    ≡
+    ```
+3. Modificar page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```vue
+    <template>
+        <div>
+            ≡
+            <div class="mt-3">
+                <app-ui-back-btn label="Volver a recetas"></app-ui-back-btn>
+            </div>
+        </div>
+    </template>
+    ≡
+    ```
+
+### 111. Detalles de la receta parte 1
+1. Modificar page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```vue
+    <template>
+        <v-conteiner>
+            <h1 class="secondary--text">{{ recipe.attributes.name }}</h1>
+            <h5 class="secondary--text">{{ recipe.attributes.category.data.attributes.name }}</h5>
+            <v-card class="mt-3">
+                <v-card-title>
+                    <v-icon class="mr-3">mdi-information</v-icon>
+                    Información
+                </v-card-title>
+
+                <v-card-text class="black--text">
+                    <v-row>
+                        <v-col col="6">
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-account-group</v-icon>
+                                Servicios: {{ recipe.attributes.servings }}
+                            </v-chip>
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-clock</v-icon>
+                                Tiempo: {{ recipe.attributes.duration }}
+                            </v-chip>
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-account-edit</v-icon>
+                                Autor: Leticia Rodríguez
+                            </v-chip>
+
+                            <v-divider class="my-3"></v-divider>
+
+                            <h4 class="body-1">Descripción</h4>
+                            <div v-html=" recipe.attributes.description"></div>
+                        </v-col>
+                        <v-col col="6">
+                            <v-img :src="recipe.attributes.img" max-height="500"></v-img>
+                        </v-col> 
+                    </v-row>
+                </v-card-text>
+            </v-card>
+            <div class="mt-3">
+                <app-ui-back-btn label="Volver a recetas"></app-ui-back-btn>
+            </div>
+        </v-conteiner>
+    </template>
+    ≡
+    ```
+
+### 112. Detalles de la receta parte 2
+1. Modificar page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <h1 class="secondary--text">{{ recipe.attributes.name }}</h1>
+            <h5 class="secondary--text">{{ recipe.attributes.category.data.attributes.name }}</h5>
+
+            <v-card class="mt-3">
+                <v-card-title>
+                    <v-icon class="mr-3">mdi-information</v-icon>
+                        Información
+                    </v-card-title>
+                <v-card-text class="black--text">
+                    <v-row>
+                        <v-col cols="6">
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-account-group</v-icon>
+                                Servicios :  {{ recipe.attributes.servings }}
+                            </v-chip>
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-clock</v-icon>
+                                Tiempo :  {{ recipe.attributes.duration }}
+                            </v-chip>
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-account-edit</v-icon>
+                                Autor: autor
+                            </v-chip>
+
+                            <v-divider class="my-3"></v-divider>
+
+                            <h4 class="body-1">Descripción</h4>
+                            <div v-html="recipe.description"></div>
+                        </v-col>
+                        <v-col cols="6">
+                            <v-img :src="recipe.attributes.img" max-height="500"></v-img>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+            </v-card>
+
+            <div class="mt-3">
+            <v-row>
+                <v-col cols="5">
+                    <v-card>
+                        <v-card-title>
+                            <v-icon class="mr-3">mdi-fridge</v-icon>
+                            Ingredientes
+                        </v-card-title>
+                        <v-list>
+                            <v-list-item v-for="(ingredient,i) in recipe.attributes.ingredients" :key="i">
+                                {{ ingredient }}
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                </v-col>
+                <v-col cols="7">
+                <v-card>
+                    <v-card-title>
+                        <v-icon class="mr-3">mdi-stove</v-icon>
+                        Pasos
+                    </v-card-title>
+                    <v-timeline dense>
+                        <v-timeline-item v-for="(step,k) in recipe.attributes.steps" :key="k+Math.random()" color="secondary" small>
+                            {{ step }}
+                        </v-timeline-item>
+                    </v-timeline>
+                </v-card>
+                </v-col>
+            </v-row>
+            </div>
+            <div class="mt-3">
+                <app-ui-back-btn label="Volver a recetas"></app-ui-back-btn>
+            </div>
+        </v-container>
+    </template>
+    ≡
+    ```
+
+### 113. Formato duración
+1. Modificar page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            ≡
+            <v-card class="mt-3">
+                ≡
+                <v-card-text class="black--text">
+                    <v-row>
+                        <v-col cols="6">
+                            ≡
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-clock</v-icon>
+                                Tiempo :  {{ formatedTime }}
+                            </v-chip>
+                            ≡
+                        </v-col>
+                        ≡
+                    </v-row>
+                </v-card-text>
+            </v-card>
+            ≡
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        computed: {
+            formatedTime() {
+                let hours = Math.floor(this.recipe.attributes.duration / 60)
+                let minutes = this.recipe.attributes.duration % 60
+                let total = ("0" + hours).slice(-2) + ':' + ("0" + minutes).slice(-2)
+                return total
+            } 
+        },
+        ≡
+    }
+    </script>
+    ```
+
+### 114. Archivos del proyecto sección 8
++ **Repositorio**: 00recursos\Section_08_frontend_vuetify.zip
+
+
+## Sección 9: Opción de Búsqueda en el cliente
+### 115. Sitios web visitados en la sección
 1 min
-
-
-
+### 116. Campo de búsqueda
+5 min
 
 
 
@@ -3053,33 +3585,6 @@
 
 
 
-### 105. Componente v-list de vuefify
-6 min
-### 106. Auto importación de componentes
-5 min
-### 107. Componente V-card
-5 min
-### 108. Tarjetas de recetas
-5 min
-### 109. Tarjeta receta
-4 min
-### 110. Botón volver
-4 min
-### 111. Detalles de la receta parte 1
-7 min
-### 112. Detalles de la receta parte 2
-5 min
-### 113. Formato duración
-3 min
-### 114. Archivos del proyecto sección 8
-1 min
-
-
-## Sección 9: Opción de Búsqueda en el cliente
-### 115. Sitios web visitados en la sección
-1 min
-### 116. Campo de búsqueda
-5 min
 ### 117. Precarga de resultados
 4 min
 ### 118. Modificaciones V4 Strapi/GraphQL

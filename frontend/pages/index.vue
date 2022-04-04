@@ -1,40 +1,10 @@
 <template>
 	<v-container>
-		<!-- {{ categories }} -->
-
-		<v-divider class="my-5"></v-divider>
-		<!-- <div v-if="$fetchState.pending">Cargando datos...</div>
-		<div v-else-if="$fetchState.error">{{ $fetchState.error }}</div> -->
-		<div>
-			<div v-for="category in categories.data" :key="category.id">
-				<v-btn 
-					:to="{ 
-						name: 'category', 
-						params: {category: category.attributes.slug}
-					}"
-					class="my-1"
-				>{{category.attributes.name}}</v-btn> 
-			</div>
-		</div>
-
-		<!-- <ApolloQuery :query="query">
-			<template slot-scope="{result:{ data, loading, error }}">
-				<div v-if="loading">Cargando datos...</div>
-				<div v-else-if="error">{{ error }}</div>
-				<div v-else>
-					<div v-for="category in data.categories.data" :key="category.id">
-						<v-btn 
-							:to="{ 
-								name: 'category', 
-								params: {category: category.attributes.slug},
-								query: {category: category.id}
-							}"
-							class="my-1"
-						>{{category.attributes.name}}</v-btn> 
-					</div>
-				</div>
-			</template>
-		</ApolloQuery> -->
+		<v-row>
+			<v-col cols="3" v-for="category in categories.data" :key="category.id">
+				<app-ui-nav-card :category="category"></app-ui-nav-card>
+			</v-col>
+		</v-row>
 	</v-container>
 </template>
 
