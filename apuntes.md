@@ -3096,7 +3096,7 @@
                     <v-btn color="primary" small icon> <v-icon>mdi-pinterest</v-icon> </v-btn>
                     <v-btn color="primary" small icon> <v-icon>mdi-twitter</v-icon> </v-btn>
                     <v-col class="text-center primary--text" cols="12">
-                        &copy; {{new Date().getFullYear()}} - Soluciones++
+                        &copy; {{new Date().getFullYear()}} - {{ title }}
                     </v-col>
                 </v-row>
             </v-footer>
@@ -3562,11 +3562,804 @@
 
 ## Sección 9: Opción de Búsqueda en el cliente
 ### 115. Sitios web visitados en la sección
-1 min
++ Material de apoyo:
+    + https://vuetifyjs.com/en/components/forms
+    + https://vuetifyjs.com/en/components/menus
+    + https://docs.strapi.io/developer-docs/latest/developer-resources/database-apis-reference/graphql-api.html#unified-response-format
+
 ### 116. Campo de búsqueda
-5 min
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+                <v-toolbar-title v-text="title"></v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-menu v-model="search" :close-on-content-click="false" offset-y>
+                    <template v-slot:activator="{on}">
+                        <v-btn v-on="on" color="primary" icon>
+                            <v-icon>mdi-magnify</v-icon>
+                        </v-btn>
+                    </template>
+                    <v-card>
+                        <v-card-title>Buscar receta</v-card-title>
+                        <v-card-text>
+                            <v-text-field outlined label="Nombre receta" dense v-model="findRecipe"></v-text-field>
+                            {{ findRecipe }}
+                        </v-card-text>
+                    </v-card>
+                </v-menu>
+            </v-app-bar>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    export default {
+        ≡
+        data () {
+            return {
+                ≡
+                search: false,
+                findRecipe: ''
+            }
+        },
+        ≡
+    }
+    </script>
+    ```
+
+### 117. Precarga de resultados
+1. Realizar petición GraphQL en Playground:
+    ```graphql
+    query {
+        categories {
+            data {
+                id
+                attributes {
+                    name
+                    icon
+                    img
+                    description
+                    slug
+                }
+            }
+        }
+        recipes {
+            data {
+                id
+                attributes {
+                    name
+                    category {
+                        data {
+                            id
+                            attributes {
+                                slug
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+2. Modificar query **frontend\graphql\categories.gql**:
+    ```graphql
+    query {
+        categories {
+            data {
+                id
+                attributes {
+                    name
+                    icon
+                    img
+                    description
+                    slug
+                }
+            }
+        }
+        recipes {
+            data {
+                id
+                attributes {
+                    name
+                    category {
+                        data {
+                            id
+                            attributes {
+                                slug
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+3. Modificar tienda **frontend\store\index.js**:
+    ```js
+    export const state = () => ({
+        counter: 0,
+        categories: [],
+        loadedRecipes: []
+    })
+
+    export const getters = {
+        readCategories(state) {
+            return state.categories
+        },
+        readLoadedRecipes(state) {
+            return state.loadedRecipes
+        },
+        ≡
+    }
+
+    export const mutations = {
+        addCategories(state, payload) {
+            state.categories = payload
+        },
+        addLoadedRecipes(state, payload) {
+            state.loadedRecipes = payload
+        },
+        ≡
+    }
+
+    export const actions = {
+        async nuxtServerInit({
+            commit
+        }) {
+            ≡
+            await client.query(query).then(data => {
+                commit('addCategories', data.data.categories)
+                commit('addLoadedRecipes', data.data.recipes)
+                ≡
+            }).catch(error => {
+                ≡
+            })
+            // })
+        },
+        ≡
+    }
+    ```
+4. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                ≡
+                <v-menu v-model="search" :close-on-content-click="false" offset-y>
+                    ≡
+                    <v-card>
+                        <v-card-title>Buscar receta</v-card-title>
+                        <v-card-text>
+                            ≡
+                            {{ recipes }}
+                        </v-card-text>
+                    </v-card>
+                </v-menu>
+            </v-app-bar>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    import { mapGetters } from 'vuex'
+    export default {
+        name: 'DefaultLayout',
+        data () {
+            return {
+                drawer: false,
+                title: "Soluciones++",
+                search: false,
+                findRecipe: ''
+            }
+        },
+        computed: {
+            ...mapGetters({
+                links: "readCategories",
+                recipes: "readLoadedRecipes"
+            })
+        }
+    }
+    </script>
+    ≡
+    ```
+
+### 118. Modificaciones V4 Strapi/GraphQL
++ Archivo gql:
+    ```graphql
+    query{
+        categories{
+            data{
+                id
+                attributes{
+                    name
+                    icon
+                    slug
+                    img
+                }
+            }
+        }
+        recipes{
+            data{
+                id
+                attributes{
+                    name
+                    category{
+                        data{
+                            id
+                            attributes{
+                                slug
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
++ Archivo Store index.js:
+    ```js
+    ≡
+    //mutation
+    const recipes = []
+    payload.forEach(element =>{
+        recipes.push({
+            id:element.id, 
+            name:element.attributes.name,
+            category:{
+                id:element.attributes.category.data.id, 
+                ...element.attributes.category.data.attributes
+            }
+        })
+    })
+    state.loadedRecipes = recipes
+    ≡
+    //action
+    async nuxtServerInit({commit}) {
+        console.log("Hola nuxt server")
+        // return new Promise((resolve, reject) => {
+        const client = this.app.apolloProvider.defaultClient
+        const query = {
+            query: require("../graphql/categories.gql")
+        }
+
+        await client.query(query).then(data => {
+            commit('addCategories', data.data.categories.data)
+            commit('addLoadedRecipes', data.data.recipes.data)
+            // resolve()
+        }).catch(error => {
+            console.log(error)
+            // reject()
+        })
+        // })
+    }
+    ≡
+    ```
+
+### 119. Precarga de resultados con filtro
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    ≡
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                ≡
+                <v-menu v-model="search" :close-on-content-click="false" offset-y>
+                    ≡
+                    <v-card>
+                        <v-card-title>Buscar receta</v-card-title>
+                        <v-card-text>
+                            <v-text-field outlined label="Nombre receta" dense v-model="findRecipe"></v-text-field>
+                            <v-list v-if="findRecipe.length != 0">
+                                <v-list-item 
+                                    v-for="recipe in filterRecipe" 
+                                    :key="recipe.id" 
+                                    @click="seeRecipe(recipe.attributes.category.data.attributes.slug, recipe.id)"
+                                >
+                                    {{ recipe.attributes.name }}
+                                </v-list-item>
+                            </v-list>
+                        </v-card-text>
+                    </v-card>
+                </v-menu>
+            </v-app-bar>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    import { mapGetters } from 'vuex'
+    export default {
+        ≡
+        data () {
+            return {
+                drawer: false,
+                title: "Soluciones++",
+                search: false,
+                findRecipe: ''
+            }
+        },
+        computed: {
+            ...mapGetters({
+                links: "readCategories",
+                recipes: "readLoadedRecipes"
+            }),
+            filterRecipe() {
+                return this.recipes.data.filter(recipe => recipe.attributes.name.toLowerCase().match(this.findRecipe.toLowerCase()))
+            }
+        },
+        methods: {
+            seeRecipe(category, recipe) {
+                this.findRecipe = ""
+                this.search = false
+                this.$router.push({name: 'category-recipe', params: {category, recipe}})
+            }
+        }
+    }
+    </script>
+    ≡
+    ```
+
+### 120. Filtros Strapi/GraphQL
+1. Realizar la siguientes peticiones GraphQL:
+    ```graphql
+    query {
+        recipes (pagination: {limit: 2, start: 3}) {
+            data {
+                id
+                attributes {
+                    name
+                }
+            }
+        }
+    }
+    ```
+    ```graphql
+    query {
+        recipes (sort: "name:asc") {
+            data {
+                id
+                attributes {
+                    name
+                }
+            }
+        }
+    }
+    ```
+    ```graphql
+    query {
+        recipes (filters:{id:{eq:5}}) {
+            data {
+                id
+                attributes {
+                    name
+                }
+            }
+        }
+    }
+    ```
+    ```graphql
+    query {
+        recipes (filters:{id:{in:[1, 3, 5]}}) {
+            data {
+                id
+                attributes {
+                    name
+                }
+            }
+        }
+    }
+    ```
+    ```graphql
+    query {
+        recipes (filters:{name:{contains:"a"}}) {
+            data {
+                id
+                attributes {
+                    name
+                }
+            }
+        }
+    }
+    ```
+2. Crear query **frontend\graphql\searchRecipe.gql**:
+    ```graphql
+    query($term:String!) {
+        recipes (filters:{name:{contains:$term}}) {
+            data {
+                id
+                attributes {
+                    name
+                }
+            }
+        }
+    }
+    ```
+
+### 121. Filtros Strapi/GraphQL V4
++ En la versión 4 la forma de hacer filtros cambia y hay tres nuevas formas de filtrar la información:
+    + Filters (Filtros)
+    + Sorting (Organizar)
+    + Pagination (Paginación)
++ Se deben ejecutar entre paréntesis después de la colección donde queremos hacer el filtro:
++ Muestra:
+```graphql
+query {
+    collection(tipoFiltro: {valor}) {
+        data {
+            id
+            attributes {
+                name
+            }
+        }
+    }
+}
+```
++ Ejemplo:
+```graphql
+query {
+    recipes(pagination: {limit: 2, start: 2}) {
+        data {
+            id
+            attributes {
+                name
+            }
+        }
+    }
+}
+```
+
+### 122. Filters Strapi/GraphQL V4
++ Filters, los filtros deben ir con la siguiente sintaxis:
+    ```graphql
+    ≡
+    filters: { field: { operator: value } }
+    //Español filtros: { campo: { operador: valor } }
+    ≡
+    ```
++ Ejemplos 1
+    + Quiero filtrar recetas por duración debo entonces remplazar el campo por duración y en el operador voy a poner lt que significa menos que, por ultimo el valor que será la referencia, mi código quedaría así.
+        ```graphql
+        query{
+            recipes(filters:{duration:{lt:30}}){
+                data{
+                    id
+                    attributes{
+                        name
+                    }
+                }
+            }
+        }
+        ```
+    + De esta forma GraphQL solo traerá las recetas de menos de 30 minutos.
++ Ejemplo 2
+    + Supongamos que quiero filtrar solo las recetas que tengan la palabra pollo al interior en este caso el campo será name, el operador contains (contiene) y el valor pollo
+        ```graphql
+        query{
+            recipes(filters:{name:{contains:"pollo"}}){
+                data{
+                    id
+                    attributes{
+                        name
+                    }
+                }
+            }
+        }
+        ```
++ Aquí tienes la una parte de la lista de operadores:
+    + eq: Igual
+    + ne: No es igual
+    + lt: Menor que
+    + lte: Menor o igual que
+    + gt: Mayor que
+    + gte: Mayor o igual que
+    + in: Incluido en el array
+    + notIn: No se encuentra en el array
+    + contains: Contiene, sensible a mayúsculas
+    + notContains: No contiene, sensible a mayúsculas
+    + containsi: Contiene, insensible a mayúsculas
+    + notContainsi: No contiene, insensible a mayúsculas
++ https://docs.strapi.io/developer-docs/latest/developer-resources/database-apis-reference/graphql-api.html#filters
+
+### 123. Sort Strapi/GraphQL V4
++ Sort: Los pedidos aceptan la palabra sort para organizarlos.
++ Se puede organizar por un valor simple o múltiple:
+    + Sort: ”valor”
+    + Sort: [“valor”, “valor”]
++ El orden puede ser definido con :asc (orden ascendiente) o con :desc (orden descendiente).
++ Ejemplo: quiero obtener las recetas en orden de duration descendente:
+    ```graphql
+    query{
+        recipes(sort:"duration:desc"){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                }
+            }
+        }
+    }
+    ```
++ O por nombre en orden alfabético
+    ```graphql
+    query{
+        recipes(sort:"name"){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                }
+            }
+        }
+    }
+    ```
+
+### 124. Pagination Strapi/GraphQL V4
++ Pagination: Las consultas pueden aceptar un parámetro de pagination. Que pueden llevar dos pares de valores que no se pueden usar juntos (siempre debe ser uno de los dos pares).
+    + Page, pageSize
+    + Start, limit
++ Ejemplo quiero pedir simplemente 3 entradas, utilizo el valor limit (al utilizar el limit no lo puedo mezclar con page o pageSize):
+    ```graphql
+    query{
+        recipes(pagination:{limit:3}){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                }
+            }
+        }
+    }
+    ```
++ Ahora quiero pedir solo 3 pero empezando en el index 3, me traerá hasta 3 valores que encuentre a partir del index 3:
+    ```graphql
+    query{
+        recipes(pagination:{limit:3, start:3}){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                }
+            }
+        }
+    }
+    ```
++ Referencia completa: https://docs.strapi.io/developer-docs/latest/developer-resources/database-apis-reference/graphql-api.html#sorting
++ Mezclar elementos: Yo puedo mezclar mis filtros separándolos por coma por ejemplo quiero las recetas en orden donde la duración sea mayo de 25 minutos y solo 2 resultados:
+    ```graphql
+    query{
+        recipes(filters:{duration:{gt:25}},sort:"name",pagination:{limit:2}){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                }
+            }
+        }
+    }
+    ```
+
+### 125. Sugerencia
++ Recuerda que siempre puedes explorar la documentation en tu playground de GraphQL y ver que tipo de valores puede recibir y como podrías utilizarlo en tus proyectos.
++ Por ejemplo, filtrar por fecha de creación.
+
+### 126. Filtros en el pedido
+1. Modificar query **frontend\graphql\categories.gql**:
+    ```graphql
+    query {
+        categories {
+            data {
+                id
+                attributes {
+                    name
+                    icon
+                    img
+                    description
+                    slug
+                }
+            }
+        }
+    }
+    ```
+2. Modificar tienda **frontend\store\index.js**:
+    ```js
+    ≡
+    export const actions = {
+        async nuxtServerInit({
+            commit
+        }) {
+            console.log('Hola Nuxt Server')
+            // return new Promise((resolve, reject) => {
+            const client = this.app.apolloProvider.defaultClient
+            const query = {
+                query: require('../graphql/categories.gql')
+            }
+            await client.query(query).then(data => {
+                commit('addCategories', data.data.categories)
+                // commit('addLoadedRecipes', data.data.recipes)
+                console.log(data)
+                // resolve()
+            }).catch(error => {
+                console.log(error)
+                // reject()
+            })
+            // })
+        },
+        searchRecipe({commit}, payload) {
+            let client = this.app.apolloProvider.defaultClient
+            const query = {
+                query: require('../graphql/searchRecipe.gql'),
+                variables: { term: payload }
+            }
+            client.query(query).then(data => {
+                // console.log(data)
+                commit('addLoadedRecipes', data.data.recipes.data)
+            }).catch(e => console.log(e))
+        },
+        ≡
+    }
+    ```
+3. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+                <v-toolbar-title v-text="title"></v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-menu v-model="search" :close-on-content-click="false" offset-y>
+                    <template v-slot:activator="{on}">
+                        <v-btn v-on="on" color="primary" icon>
+                            <v-icon>mdi-magnify</v-icon>
+                        </v-btn>
+                    </template>
+                    <v-card>
+                        <v-card-title>Buscar receta</v-card-title>
+                        <v-card-text>
+                            <v-text-field 
+                                outlined 
+                                label="Nombre receta" 
+                                dense 
+                                v-model="findRecipe"
+                                @input="searchRecipe()"
+                            ></v-text-field>
+                            <v-list v-if="findRecipe.length != 0">
+                                <v-list-item 
+                                    v-for="recipe in recipes" 
+                                    :key="recipe.id" 
+                                    @click="seeRecipe(recipe.attributes.category.data.attributes.slug, recipe.id)"
+                                >
+                                    {{ recipe.attributes.name }}
+                                </v-list-item>
+                            </v-list>
+                        </v-card-text>
+                    </v-card>
+                </v-menu>
+            </v-app-bar>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    import { mapGetters } from 'vuex'
+    export default {
+        ≡
+        computed: {
+            ...mapGetters({
+                links: "readCategories",
+                recipes: "readLoadedRecipes"
+            }),
+            filterRecipe() {
+                return this.recipes.data.filter(recipe => recipe.attributes.name.toLowerCase().match(this.findRecipe.toLowerCase()))
+            }
+        },
+        methods: {
+            seeRecipe(category, recipe) {
+                this.findRecipe = ""
+                this.search = false
+                this.$router.push({name: 'category-recipe', params: {category, recipe}})
+            },
+            searchRecipe() {
+                this.$store.dispatch('searchRecipe', this.findRecipe)
+            }
+        }
+    }
+    </script>
+    ```
+4. Modificar query **frontend\graphql\searchRecipe.gql**:
+    ```graphql
+    query($term:String!){
+        recipes(filters:{name:{contains:$term}}){
+            data{
+                id
+                attributes{
+                    name
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                                slug
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+### 127. Modificaciones V4 Strapi/GraphQL
++ Debemos modificar el archivo GraphQL y la acción, como la mutación ya tenía la modificación se puede dejar como estaba.
++ Archivo gql:
+    ```graphql
+    query($term:String!){
+        recipes(filters:{name:{contains:$term}}){
+            data{
+                id
+                attributes{
+                    name
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                                slug
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
++ Acciones:
+    + Nuxt server init // poner en comentarios el llamado a la antigua mutation:
+    ```js
+    await client.query(query).then(data => {
+        commit('addCategories', data.data.categories.data)
+        // commit('addLoadedRecipes', data.data.recipes.data)
+        // resolve()
+    }).catch(error => {
+        console.log(error)
+        // reject()
+    })
+    ```
++ Pasar el valor del array a la mutation:
+    ```js
+    searchRecipe({commit}, payload){
+        let client = this.app.apolloProvider.defaultClient
+        const query = {
+            query:require('../graphql/searchRecipe.gql'),
+            variables:{term:payload}
+        }
+        client.query(query).then(data => {
+            //console.log(data)
+            commit('addLoadedRecipes', data.data.recipes.data)
+        }).catch(e => console.log(e))
+    },
+    ```
+
+### 128. Archivos del proyecto sección 9
++ **Repositorio**: 00recursos\Section_09_buscador.zip
 
 
+## Sección 10: Iniciar sesion con Nuxt Auth
+### 129. Sitios web visitados en la sección
+1 min
+### 130. Componente de dialogo V-dialog
+4 min
 
 
 
@@ -3585,34 +4378,6 @@
 
 
 
-### 117. Precarga de resultados
-4 min
-### 118. Modificaciones V4 Strapi/GraphQL
-1 min
-### 119. Precarga de resultados con filtro
-6 min
-### 120. Filtros Strapi/GraphQL
-4 min
-### 121. Filtros Strapi/GraphQL V4
-1 min
-### 122. Filters Strapi/GraphQL V4
-1 min
-### 123. Sort Strapi/GraphQL V4
-1 min
-### 124. Pagination Strapi/GraphQL V4
-1 min
-### 125. Sugerencia
-1 min
-### 126. Filtros en el pedido
-6 min
-### 127. Modificaciones V4 Strapi/GraphQL
-1 min
-### 128. Archivos del proyecto sección 9
-1 min
-### 129. Sitios web visitados en la sección
-1 min
-### 130. Componente de dialogo V-dialog
-4 min
 ### 131. Creación del componente de inicio de sesión
 6 min
 ### 132. Componente snackbar
@@ -3649,6 +4414,9 @@
 5 min
 ### 148. Archivos del proyecto sección 10
 1 min
+
+
+## Sección 11: Crear, modificar y borrar con GraphQL desde Nuxt
 ### 149. Sitios web visitados en la sección
 1 min
 ### 150. Nueva relación User/Autor
