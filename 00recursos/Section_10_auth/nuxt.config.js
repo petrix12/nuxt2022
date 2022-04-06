@@ -14,8 +14,7 @@ export default {
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' },
-      { name: 'format-detection', content: 'telephone=no' }
+      { hid: 'description', name: 'description', content: '' }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
@@ -32,7 +31,7 @@ export default {
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: [
-    {path: '~/components', prefix: 'app'}
+    {path:'~/components', prefix:'app'}
   ],
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
@@ -47,22 +46,20 @@ export default {
     '@nuxtjs/axios',
     '@nuxtjs/auth-next'
   ],
-
   auth: {
     strategies: {
       local: {
         token: {
           property: 'jwt',
-          /* global: true, */
           type: 'Bearer'
         },
         user: {
-          property: false
+          property: false,
         },
         endpoints: {
-          login: { url: 'api/auth/local', method: 'post' },
+          login: { url: 'auth/local', method: 'post' },
           logout: false,
-          user: { url: 'api/users/me', method: 'get' }
+          user: { url: 'users/me', method: 'get' }
         }
       }
     },
@@ -73,11 +70,9 @@ export default {
       home: '/user'
     }
   },
-
-  axios: {
-    baseURL: 'http://localhost:1337/'
+  axios:{
+    baseURL:'http://localhost:1337/'
   },
-
   apollo: {
     clientConfigs: {
       default: {
@@ -85,7 +80,6 @@ export default {
       }
     }
   },
-
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
@@ -95,7 +89,7 @@ export default {
         light: {
           primary: '#8A9337',
           accent: '#EFF4C3',
-          secondary: '#3D4058',
+          secondary: '#3D405B',
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,
@@ -108,9 +102,7 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
   },
-
-  // Rutas
-  /* router: {
-    middleware: "initData"
-  } */
+  // router:{
+  //   middleware:"initData"
+  // }
 }

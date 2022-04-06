@@ -38,6 +38,7 @@
 			<v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 			<v-toolbar-title v-text="title"></v-toolbar-title>
 			<v-spacer></v-spacer>
+
 			<v-menu v-model="search" :close-on-content-click="false" offset-y>
 				<template v-slot:activator="{on}">
 					<v-btn v-on="on" color="primary" icon>
@@ -66,12 +67,66 @@
 					</v-card-text>
 				</v-card>
 			</v-menu>
+
+			<div v-if="$auth.loggedIn">
+				<v-menu
+					v-model="loginmenu"
+					:close-on-content-click="false"
+					offset-y
+				>
+					<template v-slot:activator="{on}">
+						<v-btn v-on="on" icon>
+							<v-avatar class="secondary">
+								<span class="white--text headline">{{ $auth.user.username[0] }}</span>
+							</v-avatar>
+						</v-btn>
+					</template>
+					<v-card>
+						<v-list>
+							<v-list-item>
+								<v-list-item-content>
+									<v-list-item-title>{{ $auth.user.username }}</v-list-item-title>
+									<v-list-item-subtitle>{{ $auth.user.email }}</v-list-item-subtitle>
+								</v-list-item-content>
+								<v-list-item-action>
+									<v-btn to="/user" small>Admin</v-btn>
+								</v-list-item-action>
+							</v-list-item>
+						</v-list>
+						<v-card-actions>
+							<v-btn text color="primary" @click="loginmenu = false">Cerrar</v-btn>
+							<v-btn color="primary" @click="logout()" small>Cerrar sesión</v-btn>
+						</v-card-actions>
+					</v-card>
+				</v-menu>
+			</div>
+			<div v-else>
+				<v-btn text color="primary" @click="dialog = true; type='app-forms-login'">Iniciar sesión</v-btn>
+				<v-btn text color="primary" @click="dialog = true; type='app-forms-register'">Registro</v-btn>
+			</div>
 		</v-app-bar>
 		
-
 		<v-main class="grey lighten-4">
 			<nuxt/>
+			<v-snackbar 
+				v-for="(snack, i) in snacks.filter((s) => s.showing)"
+				:key="i + Math.random()"
+				v-model="snack.showing"
+				:color="snack.color"
+				:timeout="snack.timeout"
+				:style="`bottom: ${i * 60 + 8}px`"
+				right
+			>
+				{{ snack.text }}
+				<v-btn slot="action" small icon @click="snack.showing = false">
+					<v-icon small>mdi-close</v-icon>
+				</v-btn>
+			</v-snackbar>
 		</v-main>
+
+		<v-dialog v-model="dialog" max-width="600">
+			<component :is="type" @close="dialog = $event" />
+		</v-dialog>
 
 		<v-footer padless>
 			<v-row justify="center" no-gutters>
@@ -96,13 +151,18 @@ export default {
 			drawer: false,
 			title: "Soluciones++",
 			search: false,
-			findRecipe: ''
+			findRecipe: '',
+			dialog: false,
+			type: 'app-forms-login',
+			snack: false,
+			loginmenu: false
 		}
 	},
 	computed: {
 		...mapGetters({
 			links: "readCategories",
-			recipes: "readLoadedRecipes"
+			recipes: "readLoadedRecipes",
+			snacks: "snackbars/readSnackbars"
 		}),
 		filterRecipe() {
 			return this.recipes.data.filter(recipe => recipe.attributes.name.toLowerCase().match(this.findRecipe.toLowerCase()))
@@ -116,7 +176,17 @@ export default {
 		},
 		searchRecipe() {
 			this.$store.dispatch('searchRecipe', this.findRecipe)
+		},
+		logout() {
+			this.$auth.logout()
+			this.loginmenu = false
 		}
+		/* test() {
+			this.$store.dispatch('snackbars/setSnack', {
+				text: 'Prueba en Soluciones++',
+				color: 'error'
+			})
+		} */
 	}
 }
 </script>

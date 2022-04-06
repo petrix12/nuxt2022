@@ -4357,9 +4357,1089 @@ query {
 
 ## Sección 10: Iniciar sesion con Nuxt Auth
 ### 129. Sitios web visitados en la sección
-1 min
++ Material de apoyo:
+    + https://auth.nuxtjs.org
+    + https://strapi.io/documentation/developer-docs/latest/development/plugins/users-permissions.html
++ Vuetify Components:
+    + https://vuetifyjs.com/en/components/dialogs
+    + https://vuetifyjs.com/en/components/snackbars
+    + https://vuetifyjs.com/en/components/forms
+    + https://vuetifyjs.com/en/components/avatars
+    + https://vuetifyjs.com/en/components/forms
+    + https://vuetifyjs.com/en/components/menus
+
 ### 130. Componente de dialogo V-dialog
-4 min
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                ≡
+                <v-btn text color="primary" @click="dialog = true; type='app-forms-login'">Iniciar sesión</v-btn>
+                <v-btn text color="primary" @click="dialog = true; type='app-forms-register'">Registro</v-btn>
+            </v-app-bar>
+            
+
+            <v-main class="grey lighten-4">
+                <nuxt/>
+            </v-main>
+
+            <v-dialog v-model="dialog">
+                <component :is="type" />
+            </v-dialog>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    import { mapGetters } from 'vuex'
+    export default {
+        name: 'DefaultLayout',
+        data () {
+            return {
+                ≡
+                dialog: false,
+                type: 'app-forms-login'
+            }
+        },
+        ≡
+    }
+    </script>
+    ```
+2. Crear componente **frontend\components\forms\Register.vue**:
+    ```vue
+    <template>
+        <div>
+            Registro
+        </div>
+    </template>
+    ```
+
+### 131. Creación del componente de inicio de sesión
+1. Diseñar componente **frontend\components\forms\Login.vue**:
+    ```vue
+    <template>
+        <v-card>
+            <v-card-title>
+                <v-icon class="mr-3">mdi-account-key</v-icon>
+                Iniciar sesión
+            </v-card-title>
+            <v-card-text>
+                <v-text-field dense outlined label="Nombre de usuario"></v-text-field>
+                <v-text-field dense outlined label="Contraseña"></v-text-field>
+                <div class="d-flex justify-space-between">
+                    <v-btn color="primary" small>Entrar</v-btn>
+                    <v-btn color="primary" small outlined @click="close()">Cerrar</v-btn>
+                </div>
+            </v-card-text>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        methods: {
+            close() {
+                this.$emit('close', false)
+            }
+        }
+    }
+    </script>
+    ```
+2. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    ≡
+    <v-dialog v-model="dialog" max-width="600">
+        <component :is="type" @close="dialog = $event" />
+    </v-dialog>
+    ≡
+    ```
+3. Diseñar componente **frontend\components\forms\Register.vue**:
+    ```vue
+    <template>
+        <v-card>
+            <v-card-title class="title secondary white--text">
+                <v-icon class="mr-3" dark>mdi-account-plus</v-icon>
+                Formulario de registro
+            </v-card-title>
+            <v-card-text>
+                <v-container>
+                    <v-text-field dense outlined label="Nombre de usuario"></v-text-field>
+                    <v-text-field dense outlined label="E-mail"></v-text-field>
+                    <v-text-field dense outlined label="Contraseña"></v-text-field>
+                    <v-text-field dense outlined label="Confirmar contraseña"></v-text-field>
+                    <div class="d-flex justify-space-between">
+                        <v-btn color="secondary" small>Entrar</v-btn>
+                        <v-btn color="secondary" small outlined @click="close()">Cerrar</v-btn>
+                    </div>
+                </v-container>
+            </v-card-text>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        methods: {
+            close() {
+                this.$emit('close', false)
+            }
+        }
+    }
+    </script>
+    ```
+
+### 132. Componente snackbar
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                ≡
+                <v-btn @click="snack = true">Temporal</v-btn>
+            </v-app-bar>
+            
+
+            <v-main class="grey lighten-4">
+                <nuxt/>
+                <v-snackbar 
+                    v-model="snack"
+                    color="info"
+                    :timeout="3000"
+                    top
+                    right
+                >
+                    Soluciones++
+                    <v-btn slot="action" small icon @click="snack = false">
+                        <v-icon small>mdi-close</v-icon>
+                    </v-btn>
+                </v-snackbar>
+            </v-main>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    import { mapGetters } from 'vuex'
+    export default {
+        ≡
+        data () {
+            return {
+                ≡
+                snack: false
+            }
+        },
+        ≡
+    }
+    </script>
+    ```
+
+### 133. Mensaje al usuario con snackbars
+1. Crear tienda **frontend\store\snackbars.js**:
+    ```js
+    export const state = () => ({
+        snackbars: []
+    })
+
+    export const getters = {
+        readSnackbars(state){
+            return state.snackbars
+        }
+    }
+
+    export const mutations = {
+        setSnack(state, payload) {
+            state.snackbars = state.snackbars.concat(payload)
+        }
+    }
+
+    export const actions = {
+        setSnack({commit}, payload) {
+            payload.showing = true
+            payload.timeout = payload.timeout || 3000
+            payload.color = payload.color || 'info'
+            commit('setSnack', payload)
+        }
+    }
+    ```
+2. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                ≡
+                <v-btn @click="test()">Temporal</v-btn>
+            </v-app-bar>
+            
+
+            <v-main class="grey lighten-4">
+                <nuxt/>
+                {{ snacks }}
+                <v-snackbar 
+                    v-for="(snack, i) in snacks.filter((s) => s.showing)"
+                    :key="i + Math.random()"
+                    v-model="snack.showing"
+                    :color="snack.color"
+                    :timeout="snack.timeout"
+                    :style="`bottom: ${i * 60 + 8}px`"
+                    right
+                >
+                    {{ snack.text }}
+                    <v-btn slot="action" small icon @click="snack.showing = false">
+                        <v-icon small>mdi-close</v-icon>
+                    </v-btn>
+                </v-snackbar>
+            </v-main>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    ≡
+    export default {
+        ≡
+        ≡
+        computed: {
+            ...mapGetters({
+                links: "readCategories",
+                recipes: "readLoadedRecipes",
+                snacks: "snackbars/readSnackbars"
+            }),
+            ≡
+        },
+        methods: {
+            ≡
+            test() {
+                this.$store.dispatch('snackbars/setSnack', {
+                    text: 'Prueba en Soluciones++',
+                    color: 'error'
+                })
+            }
+        }
+    }
+    </script>
+    ```
+3. Modificar tienda **frontend\store\index.js**:
+    ```js
+    export const strict = false
+    ≡
+    ```
+
+### 134. Remover elementos temporales (Video opcional)
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                ≡
+                <v-btn text color="primary" @click="dialog = true; type='app-forms-login'">Iniciar sesión</v-btn>
+                <v-btn text color="primary" @click="dialog = true; type='app-forms-register'">Registro</v-btn>
+            </v-app-bar>
+            
+
+            <v-main class="grey lighten-4">
+                <nuxt/>
+                <v-snackbar 
+                    v-for="(snack, i) in snacks.filter((s) => s.showing)"
+                    :key="i + Math.random()"
+                    v-model="snack.showing"
+                    :color="snack.color"
+                    :timeout="snack.timeout"
+                    :style="`bottom: ${i * 60 + 8}px`"
+                    right
+                >
+                    {{ snack.text }}
+                    <v-btn slot="action" small icon @click="snack.showing = false">
+                        <v-icon small>mdi-close</v-icon>
+                    </v-btn>
+                </v-snackbar>
+            </v-main>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    ≡
+    export default {
+        ≡
+        ≡
+        computed: {
+            ...mapGetters({
+                links: "readCategories",
+                recipes: "readLoadedRecipes",
+                snacks: "snackbars/readSnackbars"
+            }),
+            ≡
+        },
+        methods: {
+            ≡
+            searchRecipe() {
+                this.$store.dispatch('searchRecipe', this.findRecipe)
+            }
+        }
+    }
+    </script>
+    ```
+
+### 135. Instalación del módulo NuxtAuth
++ https://auth.nuxtjs.org
+1. Instalar dependencia NuxtAuth en el proyecto **frontend**:
+    + $ npm install --save-exact @nuxtjs/auth-next
+    + $ npm install @nuxtjs/axios
+2. Modificar el archivo de configuración de Nuxt.js **frontend\nuxt.config.js**:
+    ```js
+    ≡
+    // Modules: https://go.nuxtjs.dev/config-modules
+    modules: [
+        '@nuxtjs/apollo',
+        '@nuxtjs/axios',
+        '@nuxtjs/auth-next'
+    ],
+    
+    auth: {
+        // Options
+    },
+    ≡
+    ```
+
+### 136. Configuración del módulo NuxtAuth
+1. Modificar el archivo de configuración de Nuxt.js **frontend\nuxt.config.js**:
+    ```js
+    ≡
+    auth: {
+        strategies: {
+        local: {
+            token: {
+                property: 'jwt',
+                /* global: true, */
+                type: 'Bearer'
+            },
+            user: {
+                property: false
+            },
+            endpoints: {
+                login: { url: 'api/auth/local', method: 'post' },
+                logout: false,
+                user: { url: 'api/users/me', method: 'get' }
+            }
+        }
+        },
+        redirect: {
+            login: '/',
+            logout: '/',
+            callback: '/',
+            home: '/user'
+        }
+    },
+    ≡
+    ```
+2. Crear página **frontend\pages\user\index.vue**:
+    ```vue
+    <template>
+        <div>
+            Bienvenido!!!
+        </div>
+    </template>
+
+    <script>
+    export default {
+        middleware: 'auth'
+    }
+    </script>
+    ```
+3. Crear carpeta:
+    + frontend\middleware
+
+### 137. Cambios en la V4 de Strapi
++ Por la version V4 debemos simplemente modificar los endpoints de Strapi, agregando la palabra api.
+    + Quedaría así:
+        + login: api/auth/local
+        + user: api/users/me
+        ```js
+        ≡
+        auth: {
+            strategies: {
+                local: {
+                    token: {
+                        property: 'jwt',
+                        type: 'Bearer'
+                    },
+                    user: {
+                        property: false,
+                    },
+                    endpoints: {
+                        login: { url: 'api/auth/local', method: 'post' },
+                        logout: false,
+                        user: { url: 'api/users/me', method: 'get' }
+                    }
+                }
+            },
+        ≡
+        ```
++ Recuerda mirar la documentación oficial de Strapi o de tu backend.
+
+### 138. Nuxt 2.15 Carpeta middleware
++ A partir de la versión 2.15 de Nuxt la carpeta middleware debe adjuntarse de forma manual.
++ Debes crear una carpeta en el directorio raíz de tu proyecto. Con el siguiente nombre:
+    + middleware
+
+### 139. Carpeta Middleware
+1. Crear middleware **frontend\middleware\initData.js**:
+    ```js
+    export default function({store}) {
+        console.log('Middleware en Soluciones++')
+        if(store.state.categories.length == 0){
+            store.dispatch('nuxtServerInit')
+        }
+    }
+    ```
+2. Agregar el middleware anterior en el page **frontend\pages\index.vue**:
+    ```vue
+    ≡
+    <script>
+    export default {
+        middleware: "initData",
+        ≡
+    }
+    </script>
+    ```
+
+### 140. Estrategia LoginWith
+1. Modificar el archivo de configuración de Nuxt.js **frontend\nuxt.config.js**:
+    ```js
+    ≡
+    auth: {
+            ≡
+        }
+    },
+
+    axios: {
+        baseURL: 'http://localhost:1337/'
+    },
+    ≡
+    ```
+2. Modificar componente **frontend\components\forms\Login.vue**:
+    ```vue
+    <template>
+        <v-card>
+            ≡
+            <v-card-text>
+                <v-form @submit.prevent="onsubmit">
+                    <v-text-field dense outlined label="Nombre de usuario" v-model="userInfo.identifier"></v-text-field>
+                    <v-text-field dense outlined label="Contraseña" v-model="userInfo.password"></v-text-field>
+                    <div class="d-flex justify-space-between">
+                        <v-btn color="primary" small type="submit">Entrar</v-btn>
+                        <v-btn color="primary" small outlined @click="close()">Cerrar</v-btn>
+                    </div>
+                </v-form>
+            </v-card-text>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                userInfo: {
+                    identifier: '',
+                    password: ''
+                }
+            }
+        },
+        methods: {
+            ≡
+            async onsubmit() {
+                await this.$auth.loginWith('local', {data: this.userInfo}).then(() => {
+                    console.log(this.$auth)
+                    this.$emit('close', false)
+                }).catch(e => console.log(e))
+            }
+        }
+    }
+    </script>
+    ```
+
+### 141. Objeto $auth y logout
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                ≡
+                <div v-if="$auth.loggedIn">
+                    {{ $auth.user.username }}
+                    <v-btn text color="primary" @click="logout()">Cerrar sesión</v-btn>
+                </div>
+                <div v-else>
+                    <v-btn text color="primary" @click="dialog = true; type='app-forms-login'">Iniciar sesión</v-btn>
+                    <v-btn text color="primary" @click="dialog = true; type='app-forms-register'">Registro</v-btn>
+                </div>
+            </v-app-bar>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    ≡
+    export default {
+        ≡
+        methods: {
+            ≡
+            logout() {
+                this.$auth.logout()
+            }
+        }
+    }
+    </script>
+    ```
+
+### 142. Estilos menú modal y avatar
+1. Modificar layout **frontend\layouts\default.vue**:
+    ```vue
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                ≡
+                <div v-if="$auth.loggedIn">
+                    <v-menu
+                        v-model="loginmenu"
+                        :close-on-content-click="false"
+                        offset-y
+                    >
+                        <template v-slot:activator="{on}">
+                            <v-btn v-on="on" icon>
+                                <v-avatar class="secondary">
+                                    <span class="white--text headline">{{ $auth.user.username[0] }}</span>
+                                </v-avatar>
+                            </v-btn>
+                        </template>
+                        <v-card>
+                            <v-list>
+                                <v-list-item>
+                                    <v-list-content>
+                                        <v-list-item-title>{{ $auth.user.username }}</v-list-item-title>
+                                        <v-list-item-subtitle>{{ $auth.user.email }}</v-list-item-subtitle>
+                                    </v-list-content>
+                                    <v-list-item-action>
+                                        <v-btn to="/user" small>Admin</v-btn>
+                                    </v-list-item-action>
+                                </v-list-item>
+                            </v-list>
+                            <v-card-actions>
+                                <v-btn text color="primary" @click="loginmenu = false">Cerrar</v-btn>
+                                <v-btn color="primary" @click="logout()" small>Cerrar sesión</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-menu>
+                </div>
+                <div v-else>
+                    <v-btn text color="primary" @click="dialog = true; type='app-forms-login'">Iniciar sesión</v-btn>
+                    <v-btn text color="primary" @click="dialog = true; type='app-forms-register'">Registro</v-btn>
+                </div>
+            </v-app-bar>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    ≡
+    export default {
+        ≡
+        data () {
+            return {
+                ≡
+                loginmenu: false
+            }
+        },
+        ≡
+    }
+    </script>
+    ```
+
+### 143. Contraseña y mensajes
+1. Modificar componente **frontend\components\forms\Login.vue**:
+    ```vue
+    <template>
+        <v-card>
+            ≡
+            <v-card-text>
+                <v-form @submit.prevent="onsubmit">
+                    <v-text-field dense outlined label="Nombre de usuario" v-model="userInfo.identifier"></v-text-field>
+                    <v-text-field 
+                        dense 
+                        outlined 
+                        label="Contraseña" 
+                        v-model="userInfo.password"
+                        :type="show ? 'text' : 'password'"
+                        :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
+                        @click:append="show = !show"
+                    ></v-text-field>
+                    ≡
+                </v-form>
+            </v-card-text>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                show: false,
+                userInfo: {
+                    identifier: '',
+                    password: ''
+                }
+            }
+        },
+        methods: {
+            ≡
+            async onsubmit() {
+                await this.$auth.loginWith('local', {data: this.userInfo}).then(() => {
+                    console.log(this.$auth)
+                    this.$emit('close', false)
+                    const msg = `Bienvenido ${this.$auth.user.username}`
+                    this.$store.dispatch('snackbars/setSnack', {
+                        text: msg,
+                        color: 'success'
+                    })
+                }).catch(e => {
+                    this.$store.dispatch('snackbars/setSnack', {
+                        text: 'Verificar nombre de usuario o contraseña',
+                        color: 'error'
+                    })
+                })
+            }
+        }
+    }
+    </script>
+    ```
+
+### 144. Registro mutación
+1. Crear archivo de mutación GraphQL **frontend\graphql\register.gql**:
+    ```graphql
+    mutation(
+        $username: String!
+        $email: String!
+        $password: String!
+    ) {
+        register (
+            input: {
+                username: $username
+                email: $email
+                password: $password
+            }
+        ){
+            user {
+                username
+                email
+            }
+        }
+    }
+    ```
+
+### 145. Registro
+1. Modificar componente **frontend\components\forms\Register.vue**:
+    ```vue
+    <template>
+        <v-card>
+            <v-card-title class="title secondary white--text">
+                <v-icon class="mr-3" dark>mdi-account-plus</v-icon>
+                Formulario de registro
+            </v-card-title>
+            <v-card-text>
+                <v-container>
+                    <v-form @submit.prevent="onsubmit">
+                        <v-text-field dense outlined label="Nombre de usuario" v-model="userInfo.username"></v-text-field>
+                        <v-text-field dense outlined label="E-mail" v-model="userInfo.email"></v-text-field>
+                        <v-text-field dense outlined label="Contraseña" v-model="userInfo.password"></v-text-field>
+                        <v-text-field dense outlined label="Confirmar contraseña"></v-text-field>
+                        <div class="d-flex justify-space-between">
+                            <v-btn color="secondary" small type="submit">Registrarse</v-btn>
+                            <v-btn color="secondary" small outlined @click="close()">Cerrar</v-btn>
+                        </div>
+                    </v-form>
+                </v-container>
+            </v-card-text>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                show: false,
+                userInfo: {
+                    username: '',
+                    email: '',
+                    password: ''
+                }
+            }
+        },
+        methods: {
+            close() {
+                this.$emit('close', false)
+            },
+            onsubmit() {
+                this.userInfo.identifier = this.userInfo.username
+                this.$apollo.mutate({
+                    mutation: require('../../graphql/register.gql'),
+                    variables: this.userInfo
+                }).then(res => {
+                    this.$auth.loginWith('local', {data: this.userInfo}).then(() => {
+                        this.$emit('close', false)
+                        const msg = `Bienvenido ${this.$auth.user.username}`
+                        this.$store.dispatch('snackbars/setSnack', {
+                            text: msg,
+                            color: 'success'
+                        }).catch(e => {
+                            this.$store.dispatch('snackbars/setSnack', {
+                                text: 'Verificar nombre de usuario o contraseña',
+                                color: 'error'
+                            })
+                        })
+                    })
+                })
+            }
+        }
+    }
+    </script>
+    ```
+
+### 146. Validación de formulario
+1. Modificar componente **frontend\components\forms\Register.vue**:
+    ```vue
+    <template>
+        <v-card>
+            ≡
+            <v-card-text>
+                <v-container>
+                    <v-form @submit.prevent="onsubmit" ref="form">
+                        <v-text-field 
+                            dense 
+                            outlined 
+                            label="Nombre de usuario" 
+                            v-model="userInfo.username"
+                            :rules="[rules.required]"
+                        ></v-text-field>
+                        <v-text-field 
+                            dense 
+                            outlined 
+                            label="E-mail" 
+                            v-model="userInfo.email"
+                            :rules="[rules.required, rules.email]"
+                        ></v-text-field>
+                        <v-text-field 
+                            dense 
+                            outlined 
+                            label="Contraseña" 
+                            v-model="userInfo.password"
+                            :rules="[rules.required, rules.min, rules.match]"
+                            counter
+                        ></v-text-field>
+                        <v-text-field 
+                            dense 
+                            outlined 
+                            label="Confirmar contraseña" 
+                            v-model="userInfo.repassword"
+                            :rules="[rules.required, rules.min, rules.match]"
+                            counter
+                        ></v-text-field>
+                        ≡
+                    </v-form>
+                </v-container>
+            </v-card-text>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                show: false,
+                rules: {
+                    required: (value) => !!value || "Este campo es obligatorio",
+                    min: (v) => (v||'').length >= 8 || "Minimo 8 caracteres",
+                    email: (v) => /.+@/.test(v) || "Deber ser un email",
+                    match: () => this.userInfo.password === this.userInfo.repassword || "Las contrasenas deben ser iguales",
+                },
+                ≡
+            }
+        },
+        methods: {
+            ≡
+            onsubmit() {
+                if(this.$refs.form.validate()){
+                    this.userInfo.identifier = this.userInfo.username
+                    this.$apollo.mutate({
+                        mutation: require('../../graphql/register.gql'),
+                        variables: this.userInfo
+                    }).then(res => {
+                        this.$auth.loginWith('local', {data: this.userInfo}).then(() => {
+                            this.$emit('close', false)
+                            const msg = `Bienvenido ${this.$auth.user.username}`
+                            this.$store.dispatch('snackbars/setSnack', {
+                                text: msg,
+                                color: 'success'
+                            }).catch(e => {
+                                this.$store.dispatch('snackbars/setSnack', {
+                                    text: 'Verificar nombre de usuario o contraseña',
+                                    color: 'error'
+                                })
+                            })
+                        })
+                    })
+                }
+            }
+        }
+    }
+    </script>
+    ```
+
+### 147. Últimos detalles
+1. Modificar componente **frontend\components\forms\Register.vue**:
+    ```vue
+    <template>
+        <v-card>
+            <v-card-title class="title secondary white--text">
+                <v-icon class="mr-3" dark>mdi-account-plus</v-icon>
+                Formulario de registro
+            </v-card-title>
+            <v-card-text>
+                <v-container>
+                    <v-form @submit.prevent="onsubmit" ref="form">
+                        <v-text-field 
+                            dense 
+                            outlined 
+                            label="Nombre de usuario" 
+                            v-model="userInfo.username"
+                            :rules="[rules.required]"
+                        ></v-text-field>
+                        <v-text-field 
+                            dense 
+                            outlined 
+                            label="E-mail" 
+                            v-model="userInfo.email"
+                            :rules="[rules.required, rules.email]"
+                        ></v-text-field>
+                        <v-text-field 
+                            dense 
+                            outlined 
+                            label="Contraseña" 
+                            v-model="userInfo.password"
+                            :rules="[rules.required, rules.min, rules.match]"
+                            counter
+                            :type="show ? 'text' : 'password'"
+                            :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
+                            @click:append="show = !show"
+                        ></v-text-field>
+                        <v-text-field 
+                            dense 
+                            outlined 
+                            label="Confirmar contraseña" 
+                            v-model="userInfo.repassword"
+                            :rules="[rules.required, rules.min, rules.match]"
+                            counter
+                            :type="show2 ? 'text' : 'password'"
+                            :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-off'"
+                            @click:append="show2 = !show"
+                        ></v-text-field>
+                        <div class="d-flex justify-space-between">
+                            <v-btn color="secondary" small type="submit">Registrarse</v-btn>
+                            <v-btn color="secondary" small outlined @click="close()">Cerrar</v-btn>
+                        </div>
+                    </v-form>
+                </v-container>
+            </v-card-text>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                show: false,
+                show2: false,
+                rules: {
+                    required: (value) => !!value || "Este campo es obligatorio",
+                    min: (v) => (v||'').length >= 8 || "Minimo 8 caracteres",
+                    email: (v) => /.+@/.test(v) || "Deber ser un email",
+                    match: () => this.userInfo.password === this.userInfo.repassword || "Las contrasenas deben ser iguales",
+                },
+                userInfo: {
+                    username: '',
+                    email: '',
+                    password: '',
+                    repassword: ''
+                }
+            }
+        },
+        methods: {
+            close() {
+                this.$emit('close', false)
+                this.$refs.form.reset()
+            },
+            onsubmit() {
+                if(this.$refs.form.validate()){
+                    this.userInfo.identifier = this.userInfo.username
+                    this.$apollo.mutate({
+                        mutation: require('../../graphql/register.gql'),
+                        variables: this.userInfo
+                    }).then(res => {
+                        this.$auth.loginWith('local', {data: this.userInfo}).then(() => {
+                            this.$emit('close', false)
+                            const msg = `Bienvenido ${this.$auth.user.username}`
+                            this.$refs.form.reset()
+                            this.$store.dispatch('snackbars/setSnack', {
+                                text: msg,
+                                color: 'success'
+                            }).catch(e => {
+                                this.$store.dispatch('snackbars/setSnack', {
+                                    text: 'Verificar nombre de usuario o contraseña',
+                                    color: 'error'
+                                })
+                            })
+                        })
+                    })
+                }
+            }
+        }
+    }
+    </script>
+    ```
+2. Modifcar page **frontend\layouts\default.vue**:
+    ```vue
+    ≡
+    <template>
+        <v-app>
+            ≡
+            <v-app-bar app :clipped-left="$vuetify.breakpoint.lgAndUp"  color="grey lighten-4" flat>
+                ≡
+                <div v-if="$auth.loggedIn">
+                    <v-menu
+                        ≡
+                    >
+                        ≡
+                        <v-card>
+                            <v-list>
+                                <v-list-item>
+                                    <v-list-item-content>
+                                        <v-list-item-title>{{ $auth.user.username }}</v-list-item-title>
+                                        <v-list-item-subtitle>{{ $auth.user.email }}</v-list-item-subtitle>
+                                    </v-list-item-content>
+                                    <v-list-item-action>
+                                        <v-btn to="/user" small>Admin</v-btn>
+                                    </v-list-item-action>
+                                </v-list-item>
+                            </v-list>
+                            <v-card-actions>
+                                <v-btn text color="primary" @click="loginmenu = false">Cerrar</v-btn>
+                                <v-btn color="primary" @click="logout()" small>Cerrar sesión</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-menu>
+                </div>
+                ≡
+            </v-app-bar>
+            ≡
+        </v-app>
+    </template>
+
+    <script>
+    ≡
+    export default {
+        ≡
+        methods: {
+            ≡
+            logout() {
+                this.$auth.logout()
+                this.loginmenu = false
+            }
+        }
+    }
+    </script>
+    ≡
+    ```
+3. Modificar componente **frontend\components\forms\Login.vue**:
+    ```vue
+    <template>
+        <v-card>
+            <v-card-title>
+                <v-icon class="mr-3">mdi-account-key</v-icon>
+                Iniciar sesión
+            </v-card-title>
+            <v-card-text>
+                <v-form @submit.prevent="onsubmit">
+                    <v-text-field dense outlined label="Nombre de usuario" v-model="userInfo.identifier"></v-text-field>
+                    <v-text-field 
+                        dense 
+                        outlined 
+                        label="Contraseña" 
+                        v-model="userInfo.password"
+                        :type="show ? 'text' : 'password'"
+                        :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
+                        @click:append="show = !show"
+                    ></v-text-field>
+                    <div class="d-flex justify-space-between">
+                        <v-btn color="primary" small type="submit">Entrar</v-btn>
+                        <v-btn color="primary" small outlined @click="close()">Cerrar</v-btn>
+                    </div>
+                </v-form>
+            </v-card-text>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                show: false,
+                userInfo: {
+                    identifier: '',
+                    password: ''
+                }
+            }
+        },
+        methods: {
+            close() {
+                this.$emit('close', false)
+            },
+            async onsubmit() {
+                await this.$auth.loginWith('local', {data: this.userInfo}).then(() => {
+                    console.log(this.$auth)
+                    this.$emit('close', false)
+                    this.userInfo.identifier = ''
+                    this.userInfo.password = ''
+                    const msg = `Bienvenido ${this.$auth.user.username}`
+                    this.$store.dispatch('snackbars/setSnack', {
+                        text: msg,
+                        color: 'success'
+                    })
+                }).catch(e => {
+                    this.$store.dispatch('snackbars/setSnack', {
+                        text: 'Verificar nombre de usuario o contraseña',
+                        color: 'error'
+                    })
+                })
+            }
+        }
+    }
+    </script>
+    ```
+
+### 148. Archivos del proyecto sección 10
++ **Repositorio**: 00recursos\Section_10_auth
+
+
+## Sección 11: Crear, modificar y borrar con GraphQL desde Nuxt
+### 149. Sitios web visitados en la sección
+1 min
+### 150. Nueva relación User/Autor
+2 min
+
 
 
 
@@ -4378,49 +5458,7 @@ query {
 
 
 
-### 131. Creación del componente de inicio de sesión
-6 min
-### 132. Componente snackbar
-3 min
-### 133. Mensaje al usuario con snackbars
-10 min
-### 134. Remover elementos temporales (Video opcional)
-1 min
-### 135. Instalación del módulo NuxtAuth
-2 min
-### 136. Configuración del módulo NuxtAuth
-6 min
-### 137. Cambios en la V4 de Strapi
-1 min
-### 138. Nuxt 2.15 Carpeta middleware
-1 min
-### 139. Carpeta Middleware
-4 min
-### 140. Estrategia LoginWith
-5 min
-### 141. Objeto $auth y logout
-3 min
-### 142. Estilos menú modal y avatar
-5 min
-### 143. Contraseña y mensajes
-4 min
-### 144. Registro mutación
-3 min
-### 145. Registro
-6 min
-### 146. Validación de formulario
-7 min
-### 147. Últimos detalles
-5 min
-### 148. Archivos del proyecto sección 10
-1 min
 
-
-## Sección 11: Crear, modificar y borrar con GraphQL desde Nuxt
-### 149. Sitios web visitados en la sección
-1 min
-### 150. Nueva relación User/Autor
-2 min
 ### 151. Otorgar los permisos de edición del autor en Strapi
 1 min
 ### 152. Autor recetas
@@ -4475,6 +5513,9 @@ query {
 4 min
 ### 177. Archivos del proyecto sección 11
 1 min
+
+
+## Sección 12: Sistema de favoritos y likes
 ### 178. Favoritos y likes
 4 min
 ### 179. GraphQL favorites V4 Strapi

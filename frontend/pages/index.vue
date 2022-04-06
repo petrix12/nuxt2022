@@ -12,6 +12,7 @@
 // import { categorias } from "../graphql/querys"
 
 export default {
+	middleware: "initData",
 	data(){
 		return {
 			// categories: []
