@@ -8,7 +8,7 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -41,6 +41,12 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::category.category",
+      "inversedBy": "recipes"
+    },
+    "autor": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
       "inversedBy": "recipes"
     }
   }

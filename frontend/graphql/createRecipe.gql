@@ -1,0 +1,45 @@
+mutation(
+    $name: String!
+    $duration: Int!
+    $servings: Int!
+    $img: String!
+    $description: String!
+    $ingredients: JSON!
+    $steps: JSON!
+    $category: ID!
+    $autor: ID!
+){
+    createRecipe(
+        data:{
+            name: $name
+            duration: $duration
+            servings: $servings
+            img: $img
+            description: $description
+            ingredients: $ingredients
+            steps: $steps
+            category: $category
+            autor: $autor
+        }
+    ){
+        data{
+            id
+            attributes{
+                name
+                autor{
+                    data{
+                        id
+                    }
+                }
+                category{
+                    data{
+                        id
+                        attributes{
+                            name
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

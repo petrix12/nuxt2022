@@ -8,11 +8,19 @@ query($slug:String!) {
                 img
                 category{
                     data{
-                    id
-                    attributes {
-                        name
-                        slug
+                      id
+                      attributes {
+                          name
+                          slug
+                      }
                     }
+                }
+              	autor{
+                    data{
+                        id
+                        attributes {
+                          	username
+                        }
                     }
                 }
             }

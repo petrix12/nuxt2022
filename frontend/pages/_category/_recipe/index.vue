@@ -21,7 +21,7 @@
                         </v-chip>
                         <v-chip color="primary" outlined>
                             <v-icon left>mdi-account-edit</v-icon>
-                            Autor: autor
+                            Autor: {{ recipe.attributes.autor.data.attributes.username }}
                         </v-chip>
 
                         <v-divider class="my-3"></v-divider>
@@ -80,7 +80,7 @@ export default {
             let minutes = this.recipe.attributes.duration % 60
             let total = ("0" + hours).slice(-2) + ':' + ("0" + minutes).slice(-2)
             return total
-        } 
+        }
     },
     async asyncData({app, route}){
         const client = app.apolloProvider.defaultClient

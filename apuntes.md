@@ -5436,9 +5436,1740 @@ query {
 
 ## Sección 11: Crear, modificar y borrar con GraphQL desde Nuxt
 ### 149. Sitios web visitados en la sección
-1 min
++ Material de apoyo:
+    + https://www.apollographql.com/docs/react/data/queries/
+
 ### 150. Nueva relación User/Autor
-2 min
+1. En Strapi agregar relación a la colección recipes:
+    + Ir a **Content-Type Builder**.
+    + Seleccionar **Recipes** y luego **Add another field to this collection type**.
+    + Seleccionar **Relation** y establecer ralación con **User (from users-permission)**.
+    + Tipo de relación: **User has many recipes**.
+    + Field name: autor.
+    + Preionar **Finish** y luego en **Save**.
+2. Reiniciar el servidor **backend**.
+
+### 151. Otorgar los permisos de edición del autor en Strapi
++ Para otorgar permisos de edición del autor:
+    + Posiblemente vas a obtener un mensaje de prohibido para acceder o editar los datos del usuario (autor) desde recetas, para esto debemos activar los permisos, como habíamos hecho anteriormente.
+    + Debemos ir a settings / roles / public /user-permission / user / y activar el campo find, luego guardar.
+    + Luego en el campo Authenticated / user-permission / user / y activar find, findoOne y update.
+    + Ya podrás obtener y editar los datos de user (autor) en recipes
+
+### 152. Autor recetas
+1. Modificar query **frontend\graphql\recipe.gql**:
+    ```graphql
+    query($id:ID!) {
+        recipe(id:$id){
+            data {
+                id
+                attributes {
+                    name
+                    duration
+                    servings
+                    img
+                    description
+                    ingredients
+                    steps
+                    likes
+                    category{
+                        data{
+                            id
+                            attributes {
+                                name
+                                slug
+                            }
+                        }
+                    }
+                    autor{
+                        data{
+                            id
+                            attributes {
+                                username
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+2. Modificar query **frontend\graphql\recipes.gql**:
+    ```graphql
+    query($slug:String!) {
+        recipes(filters:{category:{slug:{eq:$slug}}}){
+            data {
+                id
+                attributes {
+                    name
+                    likes
+                    img
+                    category{
+                        data{
+                        id
+                        attributes {
+                            name
+                            slug
+                        }
+                        }
+                    }
+                    autor{
+                        data{
+                            id
+                            attributes {
+                                username
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+3. Modificar componente **frontend\components\ui\NavCardRecipe.vue**:
+    ```vue
+    <template>
+        <v-card 
+           ≡
+        >
+            ≡
+            <v-card-text>
+                <v-row>
+                    <v-col cols="7">
+                        <h3>{{ recipe.attributes.name }}</h3>
+                        {{ recipe.attributes.autor.data.attributes.username }}
+                        
+                    </v-col>
+                    ≡
+                </v-row>
+            </v-card-text>
+        </v-card>
+    </template>
+    ≡
+    ```
+4. Modificar page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```vue
+    ≡
+    <v-chip color="primary" outlined>
+        <v-icon left>mdi-account-edit</v-icon>
+        Autor: {{ recipe.attributes.autor.data.attributes.username }}
+    </v-chip>
+    ≡
+    ```
+
+### 153. Modificaciones Strapi V4
++ repices.gql:
+    ```graphql
+    query($id:ID!){
+        recipe(id:$id){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                    servings
+                    img
+                    description
+                    ingredients
+                    steps
+                    likes
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                                slug
+                            }
+                        }
+                    }
+                    autor{
+                        data{
+                            attributes{
+                                username
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
++ Modificamos el objeto de respuesta en category/index:
+    ```js
+    const recipe = {
+        id:element.id,
+        name:element.attributes.name,
+        likes:element.attributes.likes,
+        img:element.attributes.img,
+        //en la propiedad category conservo un objeto
+        //pero filtro las propiedades data y attributos para facil uso
+        category:{id:element.attributes.category.data.id, 
+        ...element.attributes.category.data.attributes},
+        //autor 
+            autor:element.attributes.autor.data.attributes.username
+    }
+    ```
++ Modificamos el navcardrecipe:
+    ```html
+    <v-card-text>
+        <v-row>
+            <v-col cols="7">
+                <h3>{{recipe.name}}</h3>
+                {{recipe.autor}}
+            </v-col>
+            <v-col cols="5" class="d-flex justify-end">
+                <div>
+                    <v-icon>mdi-heart</v-icon>
+                    <span>{{recipe.likes}}</span>
+                </div>
+            </v-col>
+        </v-row>
+    </v-card-text>
+    ```
++ recipe.gql
+    ```graphql
+    query($id:ID!){
+        recipe(id:$id){
+            data{
+                id
+                attributes{
+                    name
+                    duration
+                    servings
+                    img
+                    description
+                    ingredients
+                    steps
+                    likes
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                                slug
+                            }
+                        }
+                    }
+                    autor{
+                        data{
+                            attributes{
+                                username
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
++ Modificamos el objeto de respuesta en category/recipe/index
+    ```js
+    recipe = {
+        id,
+        name:attributes.name,
+        duration:attributes.duration,
+        servings:attributes.servings,
+        img:attributes.img,
+        description:attributes.description,
+        ingredients:attributes.ingredients,
+        steps:attributes.steps,
+        likes:attributes.likes,
+        category:{id:attributes.category.data.id, ...attributes.category.data.attributes},
+        //add autor to recipe
+        autor:attributes.autor.data.attributes.username
+    }
+    ```
+
+### 154. Página de usuario
+1. Crear query **frontend\graphql\userRecipes.gql**:
+    ```graphql
+    query($id:ID!){
+        recipes(filters:{autor:{id:{eq:$id}}}){
+            data{
+                id
+                attributes{
+                    name
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+2. Modificar page **frontend\pages\user\index.vue**:
+    ```vue
+    <template>
+        <div>
+            Bienvenido!!!
+            <div>
+                {{ recipes }}
+            </div>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        middleware: 'auth',
+        async asyncData({ app }) {
+            let client = app.apolloProvider.defaultClient
+            let id = app.$auth.user.id
+            let query = {
+                query: require("../../graphql/userRecipes.gql"),
+                variables: { id },
+            }
+            let recipes = null
+            await client.query(query).then((res) => {
+                //recuarda analizar los datos que trae tu servidor
+                console.log(res)
+                //convierto a recipes de un nulo a un array
+                recipes = []
+                //hago un bucle para crear obtener los datos de manera sencilla
+                res.data.recipes.data.forEach((element) => {
+                    //creo un nuevo objeto con el formato deseado
+                    const recipe = {
+                        id: element.id,
+                        name: element.attributes.name,
+                        category: {
+                            id: element.attributes.category.data.id,
+                            name:element.attributes.category.data.attributes.name
+                        },
+                    };
+                    //recuerda analizar los datos que recibes en la respuesta
+                    recipes.push(recipe)
+                })
+            })
+            return { recipes }
+        }
+    }
+    </script>
+    ```
+
+### 155. Modificaciones Strapi V4
++ userRecipes.gql:
+    ```graphql
+    query($id:ID!){
+        recipes(filters:{autor:{id:{eq:$id}}}){
+            data{
+                id
+                attributes{
+                    name
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
++ user/index:
+    ```js
+    ≡
+    async asyncData({ app }) {
+        let client = app.apolloProvider.defaultClient;
+        let id = app.$auth.user.id;
+        let query = {
+            query: require("../../graphql/userRecipes.gql"),
+            variables: { id },
+        };
+        let recipes = null;
+        await client.query(query).then((res) => {
+            //recuarda analizar los datos que trae tu servidor
+            console.log(res);
+            //convierto a recipes de un nulo a un array
+            recipes = [];
+            //hago un bucle para crear obtener los datos de manera sencilla
+            res.data.recipes.data.forEach((element) => {
+                //creo un nuevo objeto con el formato deseado
+                const recipe = {
+                    id: element.id,
+                    name: element.attributes.name,
+                    category: {
+                        id: element.attributes.category.data.id,
+                        name:element.attributes.category.data.attributes.name
+                    },
+                };
+                //recuerda analizar los datos que recibes en la respuesta
+                recipes.push(recipe);
+            });
+        });
+        return { recipes };
+    },
+    ≡
+    ```
+
+### 156. Lista de recetas del usuario
+1. Modificar page **frontend\pages\user\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <h2>Bienvenido {{ $auth.user.username }}!!!</h2>
+            <v-divider class="my-5"></v-divider>
+            <h3>Lista de recetas</h3>
+            <v-btn color="primary" small class="my-3">Agregar receta</v-btn>
+            <div v-if="recipes">
+                <app-ui-list-recipes :recipes="recipes"></app-ui-list-recipes>
+            </div>
+            <div v-else>Cargando...</div>
+        </v-container>
+    </template>
+    ≡
+    ```
+2. Crear componente **frontend\components\ui\listRecipes.vue**:
+    ```vue
+    <template>
+        <div>
+            <div v-if="recipes.length != 0">
+                <v-list>
+                    <v-list-item-group>
+                        <template v-for="recipe in recipes">
+                            <v-list-item two-line :key="recipe.id">
+                                <v-list-item-content>
+                                    <v-list-item-title>
+                                        {{ recipe.name }}
+                                    </v-list-item-title>
+                                    <v-list-item-subtitle>
+                                        {{ recipe.category.name }}
+                                    </v-list-item-subtitle>
+                                </v-list-item-content>
+                                <v-list-item-action>
+                                    <v-row align="center" justify="center">
+                                        <v-btn icon><v-icon>mdi-pencil</v-icon></v-btn>
+                                        <v-btn icon><v-icon>mdi-delete</v-icon></v-btn>
+                                    </v-row>
+                                </v-list-item-action>
+                            </v-list-item>
+                        </template>
+                    </v-list-item-group>
+                </v-list>
+            </div>
+            <div v-else>
+                No hay recetas disponibles
+            </div>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        props: {
+            recipes: {
+                type: Array,
+                default: () => ([])
+            }
+        }
+    }
+    </script>
+    ```
+
+### 157. Mutación de crear receta
+1. Crear query ****:
+    ```graphql
+    mutation(
+        $name: String!
+        $duration: Int!
+        $servings: Int!
+        $img: String!
+        $description: String!
+        $ingredients: JSON!
+        $steps: JSON!
+        $category: ID!
+        $autor: ID!
+    ){
+        createRecipe(
+            data:{
+                name: $name
+                duration: $duration
+                servings: $servings
+                img: $img
+                description: $description
+                ingredients: $ingredients
+                steps: $steps
+                category: $category
+                autor: $autor
+            }
+        ){
+            data{
+                id
+                attributes{
+                    name
+                    autor{
+                        data{
+                            id
+                        }
+                    }
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+    Query variables de prueba:
+    ```json
+    {
+        "name": "Agua",
+        "duration": 1,
+        "servings": 1,
+        "img": "",
+        "description": "Solo es agua",
+        "ingredients": ["agua"],
+        "steps": ["servir el agua"],
+        "category": 1,
+        "autor": 2
+    }
+    ```
+    HTTP Headers:
+    ```json
+    {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNjQ5Mjg2NDY0LCJleHAiOjE2NTE4Nzg0NjR9.6O7cmZ064yV2MyMAFmLdbPTrjbKxGCiVarcPs5CF9WA"
+    }
+    ```
+    Para obtener un token:
+    ```graphql
+    mutation {
+        login(
+            input: {
+                identifier: "prueba2"
+                password: "12345678"
+            }
+        ){
+            jwt
+        }
+    }
+    ```
+
+### 158. Mutación de crear receta Strapi V4
++ Mutación para crear receta:
+    ```graphql
+    mutation(
+        $name: String!
+        $duration: Int!
+        $servings: Int!
+        $img: String!
+        $description: String!
+        $ingredients: JSON!
+        $steps: JSON!
+        $category: ID!
+        $autor: ID!
+    ){
+        createRecipe(
+            data:{
+                name: $name
+                duration: $duration
+                servings: $servings
+                img: $img
+                description: $description
+                ingredients: $ingredients
+                steps: $steps
+                category: $category
+                autor: $autor
+            }
+        ){
+            data{
+                id
+                attributes{
+                    name
+                    autor{
+                        data{
+                            id
+                        }
+                    }
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+### 159. Componente añadir receta
+1. Crear page **frontend\pages\user\newRecipe.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <h2>Agregar nueva receta</h2>
+            <v-divider class="my-5"></v-divider>
+            <h3>Mi receta</h3>
+            <app-forms-recipe></app-forms-recipe>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        middleware: 'auth'
+    }
+    </script>
+    ```
+2. Crear componente **frontend\components\forms\Recipe.vue**:
+    ```vue
+    <template>
+        <div>
+            <v-form>
+                <p>{{ recipe.name }}</p>
+                <p>{{ recipe.duration }}</p>
+                <p>{{ recipe.servings }}</p>
+                <p>{{ recipe.img }}</p>
+                <p>{{ recipe.description }}</p>
+                <p>{{ recipe.ingredients }}</p>
+                <p>{{ recipe.steps }}</p>
+                <p>{{ recipe.category }}</p>
+            </v-form>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        props: {
+            recipe: {
+                type: Object,
+                default: () => ({
+                    name: '',
+                    duration: 0,
+                    servings: 0,
+                    img: '',
+                    description: '',
+                    ingredients: [''],
+                    steps: [''],
+                    category: 1
+                })
+            }
+        }
+    }
+    </script>
+    ```
+3. Modificar page **frontend\pages\user\index.vue**:
+    ```vue
+    ≡
+    <v-btn color="primary" small class="my-3" to="user/newRecipe">Agregar receta</v-btn>
+    ≡
+    ```
+
+### 160. Formulario añadir receta parte 1
+1. Modificar componente **frontend\components\forms\Recipe.vue**:
+    ```vue
+    <template>
+        <div>
+            <v-form>
+                <v-text-field dense label="Nombre de la receta" outlined v-model="recipe.name"></v-text-field>
+                <v-text-field dense label="Duración de la receta" outlined v-model="recipe.duration" type="number"></v-text-field>
+                <v-text-field dense label="Cantidad de platos" outlined v-model="recipe.servings" type="number"></v-text-field>
+                <v-text-field dense label="Foto" outlined v-model="recipe.img" type="url"></v-text-field>
+                <v-textarea dense label="Descripción" outlined v-model="recipe.description"></v-textarea>
+                <div v-for="(ingredient, i) in recipe.ingredients" :key="'ingrediente-' + i">
+                    <v-text-field 
+                        dense 
+                        :label="`Ingrediente ${i + 1}`" 
+                        outlined 
+                        v-model="recipe.ingredients[i]"
+                    ></v-text-field>
+                </div>
+                <v-btn class="primary" small @click="addItem('ingredients')">Agregar ingrediente</v-btn>
+                <div v-for="(step, i) in recipe.steps" :key="'step-' + i">
+                    <v-text-field 
+                        dense 
+                        :label="`Paso ${i + 1}`" 
+                        outlined 
+                        v-model="recipe.steps[i]"
+                    ></v-text-field>
+                </div>
+                <v-btn class="primary" small @click="addItem('steps')">Agregar paso</v-btn>
+                ≡
+            </v-form>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        ≡
+        methods: {
+            addItem(item) {
+                if(this.recipe[item] == null){
+                    this.recipe[item] = []
+                }
+                this.recipe[item].push("")
+            }
+        }
+    }
+    </script>
+    ```
+
+### 161. Formulario añadir receta parte 2
+1. Modificar componente **frontend\components\forms\Recipe.vue**:
+    ```vue
+    <template>
+        <div>
+            <v-card max-width="800" class="mx-auto">
+                <v-card-title class="heading">Mi receta</v-card-title>
+                <v-card-text>
+                    <v-form>
+                        <v-container>
+                            <v-row>
+                                <v-col cols="12">
+                                    <v-text-field dense label="Nombre de la receta" outlined v-model="recipe.name"></v-text-field>
+                                </v-col>
+                                <v-col cols="4">
+                                    <v-text-field dense label="Duración de la receta" outlined v-model="recipe.duration" type="number"></v-text-field>
+                                </v-col>
+                                <v-col cols="4">
+                                    <v-text-field dense label="Cantidad de platos" outlined v-model="recipe.servings" type="number"></v-text-field>
+                                </v-col>
+                                <v-col cols="4">
+                                    <v-select
+                                        dense
+                                        outlined
+                                        v-model="recipe.category"
+                                        label="Categoría"
+                                        :items="categories"
+                                        item-text="attributes.name"
+                                        item-value="id"
+                                    >
+
+                                    </v-select>
+                                </v-col>
+                                <v-col cols="12">
+                                    <v-text-field dense label="Foto" outlined v-model="recipe.img" type="url"></v-text-field>
+                                </v-col>
+                                <v-col cols="12">
+                                    <v-textarea dense label="Descripción" outlined v-model="recipe.description"></v-textarea>
+                                </v-col>
+                                
+                                <v-col cols="5">
+                                    <h3 class="mb-5">Ingredientes</h3>
+                                    <div v-for="(ingredient, i) in recipe.ingredients" :key="'ingrediente-' + i">
+                                        <v-text-field 
+                                            dense 
+                                            :label="`Ingrediente ${i + 1}`" 
+                                            outlined 
+                                            v-model="recipe.ingredients[i]"
+                                        ></v-text-field>
+                                    </div>
+                                    <v-btn class="primary" small @click="addItem('ingredients')">Agregar ingrediente</v-btn>
+                                    <!-- <v-divider class="my-5"></v-divider> -->
+                                </v-col>
+                                <v-col cols="7">
+                                    <h3 class="mb-5">Pasos</h3>
+                                    <div v-for="(step, i) in recipe.steps" :key="'step-' + i">
+                                        <v-textarea 
+                                            dense 
+                                            :label="`Paso ${i + 1}`" 
+                                            outlined 
+                                            v-model="recipe.steps[i]"
+                                            height="100"
+                                        ></v-textarea>
+                                    </div>
+                                    <v-btn class="primary" small @click="addItem('steps')">Agregar paso</v-btn>
+                                </v-col>
+                            </v-row>
+                        </v-container>
+                        <p>{{ recipe.name }}</p>
+                        <p>{{ recipe.duration }}</p>
+                        <p>{{ recipe.servings }}</p>
+                        <p>{{ recipe.img }}</p>
+                        <p>{{ recipe.description }}</p>
+                        <p>{{ recipe.ingredients }}</p>
+                        <p>{{ recipe.steps }}</p>
+                        <p>{{ recipe.category }}</p>
+                    </v-form>
+                </v-card-text>
+            </v-card>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        ≡
+        computed: {
+            categories() {
+                return this.$store.getters.readCategories.data
+            }
+        },
+        methods: {
+            ≡
+        }
+    }
+    </script>
+    ```
+2. Modificar page **frontend\pages\user\newRecipe.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <h2>Agregar nueva receta</h2>
+            <v-divider class="my-5"></v-divider>
+            <app-forms-recipe></app-forms-recipe>
+        </v-container>
+    </template>
+    ≡
+    ```
+
+### 162. Tiempo en minutos (Video opcional)
+1. Modificar componente **frontend\components\forms\Recipe.vue**:
+    ```vue
+    <template>
+        <div>
+            <v-card max-width="800" class="mx-auto">
+                <v-card-title class="heading">Mi receta</v-card-title>
+                <v-card-text>
+                    <v-form>
+                        <v-container>
+                            <v-row>
+                                ≡
+                                <v-col cols="4">
+                                    <v-text-field dense label="Duración de la receta (minutos)" outlined v-model="recipe.duration" type="number"></v-text-field>
+                                    <v-icon>mdi-clock</v-icon> {{ formatedTime }}
+                                </v-col>
+                                ≡
+                            </v-row>
+                        </v-container>
+                        ≡
+                    </v-form>
+                </v-card-text>
+            </v-card>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        ≡
+        computed: {
+            ≡
+            formatedTime() {
+                let hours = Math.floor(this.recipe.duration / 60)
+                let minutes = this.recipe.duration % 60
+                let total = ("0" + hours).slice(-2) + ':' + ("0" + minutes).slice(-2)
+                return total
+            }
+        },
+        ≡
+    }
+    </script>
+    ```
+
+### 163. Apollo mutate
+1. Modificar componente **frontend\components\forms\Recipe.vue**:
+    ```vue
+    <template>
+        <div>
+            <v-card max-width="800" class="mx-auto">
+                <v-card-title class="heading">Mi receta</v-card-title>
+                <v-card-text>
+                    <v-form @submit.prevent="onsubmit">
+                        <v-container>
+                            <v-row>
+                                <v-col cols="12">
+                                    <v-text-field dense label="Nombre de la receta" outlined v-model="recipe.name"></v-text-field>
+                                </v-col>
+                                <v-col cols="4">
+                                    <v-text-field dense label="Duración de la receta (minutos)" outlined v-model="recipe.duration" type="number"></v-text-field>
+                                    <v-icon>mdi-clock</v-icon> {{ formatedTime }}
+                                </v-col>
+                                <v-col cols="4">
+                                    <v-text-field dense label="Cantidad de platos" outlined v-model="recipe.servings" type="number"></v-text-field>
+                                </v-col>
+                                <v-col cols="4">
+                                    <v-select
+                                        dense
+                                        outlined
+                                        v-model="recipe.category"
+                                        label="Categoría"
+                                        :items="categories"
+                                        item-text="attributes.name"
+                                        item-value="id"
+                                    >
+
+                                    </v-select>
+                                </v-col>
+                                <v-col cols="12">
+                                    <v-text-field dense label="Foto" outlined v-model="recipe.img" type="url"></v-text-field>
+                                </v-col>
+                                <v-col cols="12">
+                                    <v-textarea dense label="Descripción" outlined v-model="recipe.description"></v-textarea>
+                                </v-col>
+                                
+                                <v-col cols="5">
+                                    <h3 class="mb-5">Ingredientes</h3>
+                                    <div v-for="(ingredient, i) in recipe.ingredients" :key="'ingrediente-' + i">
+                                        <v-text-field 
+                                            dense 
+                                            :label="`Ingrediente ${i + 1}`" 
+                                            outlined 
+                                            v-model="recipe.ingredients[i]"
+                                        ></v-text-field>
+                                    </div>
+                                    <v-btn class="primary" small @click="addItem('ingredients')">Agregar ingrediente</v-btn>
+                                    <!-- <v-divider class="my-5"></v-divider> -->
+                                </v-col>
+                                <v-col cols="7">
+                                    <h3 class="mb-5">Pasos</h3>
+                                    <div v-for="(step, i) in recipe.steps" :key="'step-' + i">
+                                        <v-textarea 
+                                            dense 
+                                            :label="`Paso ${i + 1}`" 
+                                            outlined 
+                                            v-model="recipe.steps[i]"
+                                            height="100"
+                                        ></v-textarea>
+                                    </div>
+                                    <v-btn class="primary" small @click="addItem('steps')">Agregar paso</v-btn>
+                                </v-col>
+                            </v-row>
+
+                            <v-btn type="submit" class="secondary my-5" small>Guardar receta</v-btn>
+                        </v-container>
+                        <p>{{ recipe.name }}</p>
+                        <p>{{ recipe.duration }}</p>
+                        <p>{{ recipe.servings }}</p>
+                        <p>{{ recipe.img }}</p>
+                        <p>{{ recipe.description }}</p>
+                        <p>{{ recipe.ingredients }}</p>
+                        <p>{{ recipe.steps }}</p>
+                        <p>{{ recipe.category }}</p>
+                    </v-form>
+                </v-card-text>
+            </v-card>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        props: {
+            recipe: {
+                type: Object,
+                default: () => ({
+                    name: '',
+                    duration: 0,
+                    servings: 0,
+                    img: '',
+                    description: '',
+                    ingredients: [''],
+                    steps: [''],
+                    category: 1
+                })
+            }
+        },
+        computed: {
+            categories() {
+                return this.$store.getters.readCategories.data
+            },
+            formatedTime() {
+                let hours = Math.floor(this.recipe.duration / 60)
+                let minutes = this.recipe.duration % 60
+                let total = ("0" + hours).slice(-2) + ':' + ("0" + minutes).slice(-2)
+                return total
+            }
+        },
+        methods: {
+            addItem(item) {
+                if(this.recipe[item] == null){
+                    this.recipe[item] = []
+                }
+                this.recipe[item].push("")
+            },
+            async onsubmit() {
+                const id = this.$auth.user.id
+                this.recipe.autor = id
+                this.recipe.duration = Number(this.recipe.duration)
+                this.recipe.servings = Number(this.recipe.servings)
+                const token = this.$auth.strategy.token.get()
+                console.log('token: ', token)
+
+                await this.$apollo.mutate({
+                    context: {
+                    headers: {
+                        Authorization: token
+                    } 
+                    },
+                    mutation: require('../../graphql/createRecipe.gql'),
+                    variables: this.recipe
+                }).then(data => {
+                    console.log('Datos: ', data)
+                }).catch(e => {console.log(e)})
+            }
+        }
+    }
+    </script>
+    ```
+
+### 164. Redirección y mensajes
+1. Modificar componente **frontend\components\forms\Recipe.vue**:
+    ```vue
+    ≡
+    methods: {
+        ≡
+        async onsubmit() {
+            const id = this.$auth.user.id
+            this.recipe.autor = id
+            this.recipe.duration = Number(this.recipe.duration)
+            this.recipe.servings = Number(this.recipe.servings)
+            const token = this.$auth.strategy.token.get()
+            console.log('token: ', token)
+
+            await this.$apollo.mutate({
+                context: {
+                   headers: {
+                       Authorization: token
+                   } 
+                },
+                mutation: require('../../graphql/createRecipe.gql'),
+                variables: this.recipe
+            }).then(data => {
+                console.log('Datos: ', data)
+                this.$router.push({name: 'user'})
+                this.$store.dispatch('snackbars/setSnack', {
+                    text: 'Receta guardada',
+                    color: 'info'
+                })
+            }).catch(e => {
+                console.log(e)
+                this.$store.dispatch('snackbars/setSnack', {
+                    text: 'No se pudo guardar la receta',
+                    color: 'error'
+                })
+            })
+        }
+    }
+    ≡
+    ```
+
+### 165. Cache de Apollo
+1. Modificar page **frontend\pages\user\index.vue**:
+    ```vue
+    ≡
+    async asyncData({ app }) {
+        let client = app.apolloProvider.defaultClient
+        let id = app.$auth.user.id
+        let query = {
+            query: require("../../graphql/userRecipes.gql"),
+            variables: { id },
+            // fetchPolicy: 'no-cache'
+        }
+        ≡
+    }
+    ≡
+    ```
+
+### 166. Actualizar el cache
+1. Modificar componente **frontend\components\forms\Recipe.vue**:
+    ```vue
+    ≡
+    async onsubmit() {
+        const id = this.$auth.user.id
+        this.recipe.autor = id
+        this.recipe.duration = Number(this.recipe.duration)
+        this.recipe.servings = Number(this.recipe.servings)
+        const token = this.$auth.strategy.token.get()
+        console.log('token: ', token)
+
+        await this.$apollo.mutate({
+            context: {
+                headers: {
+                    Authorization: token
+                } 
+            },
+            mutation: require('../../graphql/createRecipe.gql'),
+            variables: this.recipe,
+            update: (cache, {data: {createRecipe}}) => {
+                const data = cache.readQuery({
+                    query: require("../../graphql/userRecipes.gql"),
+                    variables: { id },
+                })
+                console.log('DATA: ', data)
+                data.recipes.push(createRecipe.recipe)
+                cache.writeQuery({
+                    query: require("../../graphql/userRecipes.gql"),
+                    variables: { id },
+                    data
+                })
+            }
+        }).then(data => {
+            console.log('Datos: ', data)
+            this.$router.push({name: 'user'})
+            this.$store.dispatch('snackbars/setSnack', {
+                text: 'Receta guardada',
+                color: 'info'
+            })
+        }).catch(e => {
+            console.log(e)
+            this.$store.dispatch('snackbars/setSnack', {
+                text: 'No se pudo guardar la receta',
+                color: 'error'
+            })
+        })
+    }
+    ≡
+    ```
+
+### 167. Actualizar cache Strapi V4
++ Recuerda que la estructura de la respuesta cambia en la versión 4,
++ Siempre puedes imprimir en consola para analizar los datos que devuelve el servidor.
++ Estas son las modificaciones en la parte del cache:
+    ```js
+    await this.$apollo.mutate({
+        context: {
+            headers: {
+                authorization: token,
+            },
+        },
+        mutation: require("../../graphql/" + mutation + ".gql"),
+        variables: this.recipe,
+        update: (cache, myrecipe) => {
+            if (mutation == "createRecipe") {
+                const data = cache.readQuery({
+                    query: require("../../graphql/userRecipes.gql"),
+                    variables: { id },
+                });
+                data.recipes.data.push(myrecipe.data[mutation].data);
+                cache.writeQuery({
+                    query: require("../../graphql/userRecipes.gql"),
+                    variables: { id },
+                    data,
+                });
+            }
+        },
+    })
+    ```
+
+### 168. Mutación modificar receta
+1. Crear query **frontend\graphql\updateRecipe.gql**:
+    ```graphql
+    mutation(
+        $id: ID!
+        $name: String!
+        $duration: Int!
+        $servings: Int!
+        $img: String!
+        $description: String!
+        $ingredients: JSON!
+        $steps: JSON!
+        $category: ID!
+        $autor: ID!
+    ){
+        updateRecipe(
+            id: $id
+            data:{
+                name: $name
+                duration: $duration
+                servings: $servings
+                img: $img
+                description: $description
+                ingredients: $ingredients
+                steps: $steps
+                category: $category
+                autor: $autor
+            }
+        ){
+            data{
+                id
+                attributes{
+                    name
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+### 169. Mutación modificar receta Strapi V4
++ Las mutaciones en la versión 4 están un poco simplificadas al contrario de los querys.
++ Es simplemente indicar el id y los datos a cambiar.
++ Recuerda mirar siempre la documentación y tu playground ya que siempre será nuestra guía.
++ updateRecipe.gql
+    ```graphql
+    mutation(
+        $id: ID!
+        $name: String!
+        $duration: Int!
+        $servings: Int!
+        $img: String!
+        $description: String!
+        $ingredients: JSON!
+        $steps: JSON!
+        $category: ID!
+        $autor: ID!
+    ){
+        updateRecipe(
+            id: $id
+            data:{
+                name: $name
+                duration: $duration
+                servings: $servings
+                img: $img
+                description: $description
+                ingredients: $ingredients
+                steps: $steps
+                category: $category
+                autor: $autor
+            }
+        ){
+            data{
+                id
+                attributes{
+                    name
+                    category{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+### 170. Editar receta parte 1
+1. Crear page **frontend\pages\user\edit\\_id.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <h2>Editar receta</h2>
+            <v-divider class="my-5"></v-divider>
+            <div v-if="recipe">
+                <app-forms-recipe :recipe="recipe"></app-forms-recipe>
+            </div>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        middleware: 'auth',
+        async asyncData({ app, route }) {
+            const client = app.apolloProvider.defaultClient
+            const id = route.params.id
+            const query = {
+                query: require("../../../graphql/recipe.gql"),
+                variables: { id },
+                fetchPolicy: "no-cache",
+            }
+            let recipe = null
+            await client.query(query).then((res) => {
+                const id = res.data.recipe.data.id;
+                //separo los attributos
+                const attributes = res.data.recipe.data.attributes;
+                //a recipe le doy un nuevo valor organizando el objeto a mi medida
+                //este es el objeto utilizado para renderizar la UI
+                recipe = {
+                    id,
+                    name: attributes.name,
+                    duration: attributes.duration,
+                    servings: attributes.servings,
+                    img: attributes.img,
+                    description: attributes.description,
+                    ingredients: attributes.ingredients,
+                    steps: attributes.steps,
+                    likes: attributes.likes,
+                    category: {
+                        id: attributes.category.data.id,
+                        ...attributes.category.data.attributes,
+                    },
+                    //add autor to recipe
+                    autor: attributes.autor.data.attributes.username,
+                }
+            })
+            return { recipe }
+        }
+    }
+    </script>
+    ```
+2. Modificar componente **frontend\components\ui\listRecipes.vue**:
+    ```html
+    ≡
+    <v-row align="center" justify="center">
+        <v-btn icon :to="{ name: 'user-edit-id', params: { id: recipe.id } }"><v-icon>mdi-pencil</v-icon></v-btn>
+        <v-btn icon><v-icon>mdi-delete</v-icon></v-btn>
+    </v-row>
+    ≡
+    ```
+3. Modificar componente **frontend\components\forms\Recipe.vue**:
+    ```vue
+    <template>
+        <div>
+            {{ hasId }}
+            ≡
+        </div>
+    </template>
+
+    <script>
+    export default {
+        ≡
+        computed: {
+            categories() {
+                return this.$store.getters.readCategories.data
+            },
+            hasId() {
+                return this.recipe.hasOwnProperty('id')
+            },
+            ≡
+        },
+        ≡
+    }
+    </script>
+    ```
+
+### 171. Editar Receta Strapi V4
++ Con el cambio del query de la versión 4 se debe adaptar la información una vez obtenida la respuesta, también se recomienda utilizar el fetchPolicy: "no-cache", en el archivo _id de edición para evitar problemas con los múltiples querys:
+    ```js
+    async asyncData({ app, route }) {
+        const client = app.apolloProvider.defaultClient;
+        const id = route.params.id;
+        const query = {
+            query: require("../../../graphql/recipe.gql"),
+            variables: { id },
+            fetchPolicy: "no-cache",
+        };
+        let recipe = null;
+        await client.query(query).then((res) => {
+            const id = res.data.recipe.data.id;
+            //separo los attributos
+            const attributes = res.data.recipe.data.attributes;
+            //a recipe le doy un nuevo valor organizando el objeto a mi medida
+            //este es el objeto utilizado para renderizar la UI
+            recipe = {
+                id,
+                name: attributes.name,
+                duration: attributes.duration,
+                servings: attributes.servings,
+                img: attributes.img,
+                description: attributes.description,
+                ingredients: attributes.ingredients,
+                steps: attributes.steps,
+                likes: attributes.likes,
+                category: {
+                    id: attributes.category.data.id,
+                    ...attributes.category.data.attributes,
+                },
+                //add autor to recipe
+                autor: attributes.autor.data.attributes.username,
+            };
+        });
+        return { recipe };
+    },
+    ```
+
+### 172. Editar receta parte 2
+1. Modificar componente **frontend\components\forms\Recipe.vue**:
+    ```vue
+    <template>
+        <div>
+            <v-card max-width="800" class="mx-auto">
+                <v-card-title class="heading">Mi receta</v-card-title>
+                <v-card-text>
+                    <v-form @submit.prevent="onsubmit">
+                        <v-container>
+                            <v-row>
+                                <v-col cols="12">
+                                    <v-text-field dense label="Nombre de la receta" outlined v-model="recipe.name"></v-text-field>
+                                </v-col>
+                                <v-col cols="4">
+                                    <v-text-field dense label="Duración de la receta (minutos)" outlined v-model="recipe.duration" type="number"></v-text-field>
+                                    <v-icon>mdi-clock</v-icon> {{ formatedTime }}
+                                </v-col>
+                                <v-col cols="4">
+                                    <v-text-field dense label="Cantidad de platos" outlined v-model="recipe.servings" type="number"></v-text-field>
+                                </v-col>
+                                <v-col cols="4">
+                                    <v-select
+                                        dense
+                                        outlined
+                                        v-model="recipe.category"
+                                        label="Categoría"
+                                        :items="categories"
+                                        item-text="attributes.name"
+                                        item-value="id"
+                                    >
+
+                                    </v-select>
+                                </v-col>
+                                <v-col cols="12">
+                                    <v-text-field dense label="Foto" outlined v-model="recipe.img" type="url"></v-text-field>
+                                </v-col>
+                                <v-col cols="12">
+                                    <v-textarea dense label="Descripción" outlined v-model="recipe.description"></v-textarea>
+                                </v-col>
+                                
+                                <v-col cols="5">
+                                    <h3 class="mb-5">Ingredientes</h3>
+                                    <div v-for="(ingredient, i) in recipe.ingredients" :key="'ingrediente-' + i">
+                                        <v-text-field 
+                                            dense 
+                                            :label="`Ingrediente ${i + 1}`" 
+                                            outlined 
+                                            v-model="recipe.ingredients[i]"
+                                        ></v-text-field>
+                                    </div>
+                                    <v-btn class="primary" small @click="addItem('ingredients')">Agregar ingrediente</v-btn>
+                                    <!-- <v-divider class="my-5"></v-divider> -->
+                                </v-col>
+                                <v-col cols="7">
+                                    <h3 class="mb-5">Pasos</h3>
+                                    <div v-for="(step, i) in recipe.steps" :key="'step-' + i">
+                                        <v-textarea 
+                                            dense 
+                                            :label="`Paso ${i + 1}`" 
+                                            outlined 
+                                            v-model="recipe.steps[i]"
+                                            height="100"
+                                        ></v-textarea>
+                                    </div>
+                                    <v-btn class="primary" small @click="addItem('steps')">Agregar paso</v-btn>
+                                </v-col>
+                            </v-row>
+
+                            <v-btn type="submit" class="secondary my-5" small>{{ hasId ? 'Actualizar receta' : 'Guardar receta' }}</v-btn>
+                        </v-container>
+                    </v-form>
+                </v-card-text>
+            </v-card>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        props: {
+            recipe: {
+                type: Object,
+                default: () => ({
+                    name: '',
+                    duration: 0,
+                    servings: 0,
+                    img: '',
+                    description: '',
+                    ingredients: [''],
+                    steps: [''],
+                    category: 1
+                })
+            }
+        },
+        computed: {
+            categories() {
+                return this.$store.getters.readCategories.data
+            },
+            hasId() {
+                return this.recipe.hasOwnProperty('id')
+            },
+            formatedTime() {
+                let hours = Math.floor(this.recipe.duration / 60)
+                let minutes = this.recipe.duration % 60
+                let total = ("0" + hours).slice(-2) + ':' + ("0" + minutes).slice(-2)
+                return total
+            }
+        },
+        methods: {
+            addItem(item) {
+                if(this.recipe[item] == null){
+                    this.recipe[item] = []
+                }
+                this.recipe[item].push("")
+            },
+            async onsubmit() {
+                const id = this.$auth.user.id
+                this.recipe.autor = id
+                this.recipe.duration = Number(this.recipe.duration)
+                this.recipe.servings = Number(this.recipe.servings)
+                const token = this.$auth.strategy.token.get()
+                const mutation = this.hasId ? "updateRecipe" : "createRecipe"
+                console.log('token: ', token)
+
+                if(typeof this.recipe.category == "object"){
+                    this.recipe.category = this.recipe.category.id
+                }
+                await this.$apollo.mutate({
+                    context: {
+                    headers: {
+                        Authorization: token
+                    } 
+                    },
+                    mutation: require('../../graphql/' + mutation + '.gql'),
+                    variables: this.recipe,
+                    update: (cache, myrecipe) => {
+                        if(mutation == 'createRecipe'){
+                            const data = cache.readQuery({
+                                query: require("../../graphql/userRecipes.gql"),
+                                variables: { id },
+                            })
+                            console.log('DATA: ', data)
+                            data.recipes.push(myrecipe.data[mutation].recipe)
+                            cache.writeQuery({
+                                query: require("../../graphql/userRecipes.gql"),
+                                variables: { id },
+                                data
+                            })
+                        }
+                    }
+                }).then(data => {
+                    console.log('Datos: ', data)
+                    this.$router.push({name: 'user'})
+                    this.$store.dispatch('snackbars/setSnack', {
+                        text: 'Receta guardada',
+                        color: 'info'
+                    })
+                }).catch(e => {
+                    console.log(e)
+                    this.$store.dispatch('snackbars/setSnack', {
+                        text: 'No se pudo guardar la receta',
+                        color: 'error'
+                    })
+                })
+            }
+        }
+    }
+    </script>
+    ```
+
+### 173. Mutación borrar receta
+1. Crear query **frontend\graphql\deleteRecipe.gql**:
+    ```graphql
+    mutation($id:ID!){
+    deleteRecipe(
+            id:$id
+        ){
+            data{
+                id
+                attributes{
+                    name
+                }
+            }
+        }
+    }
+    ```
+
+### 174. Mutación borrar receta Strapi V4
+    ```graphql
+    mutation($id:ID!){
+    deleteRecipe(
+            id:$id
+        ){
+            data{
+                id
+                attributes{
+                    name
+                }
+            }
+        }
+    }
+    ```
+
+### 175. Modal borrar
+1. Crear componente **frontend\components\ui\DeleteItem.vue**:
+    ```vue
+    <template>
+        <div>
+            <v-btn icon @click="dialog = true"><v-icon>mdi-delete</v-icon></v-btn>
+            <v-dialog v-model="dialog" max-width="590">
+                <v-card>
+                    <v-card-title class="headline">Borrar receta</v-card-title>
+                    <v-card-text>
+                        ¿Realmente quieres borrar esta receta?
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="error" @click="returnChoice(true)">Borrar</v-btn>
+                        <v-btn color="primary"  @click="returnChoice(false)">Volver</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return{
+                dialog: false
+            }
+        },
+        methods:{
+            returnChoice(choice){
+                this.dialog = false
+                this.$emit("choice", choice)
+            }
+        }
+    }
+    </script>
+    ```
+2. Modificar componente **frontend\components\ui\listRecipes.vue**:
+    ```vue
+    ≡
+    <template>
+        <div>
+            <div v-if="recipes.length != 0">
+                <v-list>
+                    <v-list-item-group>
+                        <template v-for="recipe in recipes">
+                            <v-list-item two-line :key="recipe.id">
+                                ≡
+                                <v-list-item-action>
+                                    <v-row align="center" justify="center">
+                                        ≡
+                                        <app-ui-delete-item @choice="deleteItem($event)"></app-ui-delete-item>
+                                    </v-row>
+                                </v-list-item-action>
+                            </v-list-item>
+                        </template>
+                    </v-list-item-group>
+                </v-list>
+            </div>
+            ≡
+        </div>
+    </template>
+
+    <script>
+    export default {
+        ≡
+        methods: {
+            deleteItem(choice) {
+                console.log(choice)
+            }
+        }
+    }
+    </script>
+    ```
+
+### 176. Borrar receta
+1. Modificar componente **frontend\components\ui\listRecipes.vue**:
+    ```vue
+    <template>
+        <div>
+            <div v-if="recipes.length != 0">
+                <v-list>
+                    <v-list-item-group>
+                        <template v-for="recipe in recipes">
+                            <v-list-item two-line :key="recipe.id">
+                                ≡
+                                <v-list-item-action>
+                                    <v-row align="center" justify="center">
+                                        ≡"><v-icon>mdi-pencil</v-icon></v-btn>
+                                        <app-ui-delete-item @choice="deleteItem($event, recipe.id)"></app-ui-delete-item>
+                                    </v-row>
+                                </v-list-item-action>
+                            </v-list-item>
+                        </template>
+                    </v-list-item-group>
+                </v-list>
+            </div>
+            ≡
+        </div>
+    </template>
+
+    <script>
+    export default {
+        ≡
+        methods: {
+            deleteItem(choice, id) {
+                console.log(choice)
+                if(choice){
+                    this.$apollo.mutate({
+                        context:{
+                            headers:{
+                                authorization:this.$auth.strategy.token.get()
+                            }
+                        },
+                        mutation:require("../../graphql/deleteRecipe.gql"),
+                        variables:{id}
+                    }).then(res =>{
+                        console.log("borrado")
+                        const miRecipe = this.recipes.find(recipe => recipe.id == id)
+                        const index = this.recipes.indexOf(miRecipe)
+                        this.recipes.splice(index, 1)
+                    })
+                }
+            }
+        }
+    }
+    </script>
+    ```
+
+### 177. Archivos del proyecto sección 11
++ **Respositorio**: 00recursos\Section_11_CRUD
+
+
+## Sección 12: Sistema de favoritos y likes
+### 178. Favoritos y likes
+1. Crear nueva relación en la colección **user**:
+    + Ir a **Strapi** -> **Content-Type Builder** -> **User**.
+    + Click en **Add another field to this collection type**.
+    + Seleccionar **Relation** en **Select a field for your collection type**.
+    + Establecer relación con la colección **recipe**.
+    + Establecer tipo de relación: **User has many recipes**.
+    + Establecer **Field name** en **favorites**.
+    + Click en **Finish** y luego en **Save**.
+2. Reiniciar el servidor **backend**.
+3. Crear query **frontend\graphql\userFavorites.gql**:
+    ```graphql
+    query($id:ID!){
+        usersPermissionsUser(id:$id){
+            data{
+                attributes{
+                    favorites{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+### 179. GraphQL favorites V4 Strapi
+    ```graphql
+    query($id:ID!){
+        usersPermissionsUser(id:$id){
+            data{
+                attributes{
+                    favorites{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+### 180. Doble mutación
+1. Crear mutation **frontend\graphql\updateLikes.gql**:
+    ```graphql
+    ≡
+    ≡
+    ```
 
 
 
@@ -5459,79 +7190,205 @@ query {
 
 
 
-### 151. Otorgar los permisos de edición del autor en Strapi
-1 min
-### 152. Autor recetas
-1 min
-### 153. Modificaciones Strapi V4
-1 min
-### 154. Página de usuario
-4 min
-### 155. Modificaciones Strapi V4
-1 min
-### 156. Lista de recetas del usuario
-7 min
-### 157. Mutación de crear receta
-7 min
-### 158. Mutación de crear receta Strapi V4
-1 min
-### 159. Componente añadir receta
-4 min
-### 160. Formulario añadir receta parte 1
-6 min
-### 161. Formulario añadir receta parte 2
-7 min
-### 162. Tiempo en minutos (Video opcional)
-1 min
-### 163. Apollo mutate
-7 min
-### 164. Redirección y mensajes
-3 min
-### 165. Cache de Apollo
-3 min
-### 166. Actualizar el cache
-5 min
-### 167. Actualizar cache Strapi V4
-1 min
-### 168. Mutación modificar receta
-2 min
-### 169. Mutación modificar receta Strapi V4
-1 min
-### 170. Editar receta parte 1
-6 min
-### 171. Editar Receta Strapi V4
-1 min
-### 172. Editar receta parte 2
-6 min
-### 173. Mutación borrar receta
-2 min
-### 174. Mutación borrar receta Strapi V4
-1 min
-### 175. Modal borrar
-6 min
-### 176. Borrar receta
-4 min
-### 177. Archivos del proyecto sección 11
-1 min
 
 
-## Sección 12: Sistema de favoritos y likes
-### 178. Favoritos y likes
-4 min
-### 179. GraphQL favorites V4 Strapi
-1 min
-### 180. Doble mutación
-5 min
 ### 181. Doble mutation V4 Strapi
-1 min
+    ```graphql
+    mutation($id:ID!, $likes:Long!, $idUser:ID!, $favorites:[ID!]){
+        updateRecipe(
+            id:$id
+            data:{
+                likes:$likes
+            } 
+        ){
+            data{
+                id
+                attributes{
+                    likes
+                }
+            }
+        }
+        updateUsersPermissionsUser(
+            id:$idUser
+            data:{
+                favorites:$favorites
+            }  
+        )
+        {
+            data{
+                id
+                attributes{
+                    favorites{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
 ### 182. Recetas favoritas
 8 min
 ### 183. Modificaciones Strapi V4
-1 min
++ userFavorites.gql
+    ```graphql
+    query($id:ID!){
+        usersPermissionsUser(id:$id){
+            data{
+                attributes{
+                    favorites{
+                        data{
+                            id
+                            attributes{
+                                name
+                                likes
+                                img
+                                category{
+                                    data{
+                                        id
+                                        attributes{
+                                            name
+                                            slug
+                                        }
+                                    }
+                                }
+                                autor{
+                                    data{
+                                        attributes{
+                                            username
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
++ user/favorites //
+    ```js
+    async asyncData({ app, store }) {
+        console.log("sale")
+        let client = app.apolloProvider.defaultClient;
+        let id = app.$auth.user.id;
+        let query = {
+            context: {
+                headers: {
+                    authorization: app.$auth.strategy.token.get(),
+                },
+            },
+            query: require("../../graphql/userFavorites.gql"),
+            fetchPolicy: "no-cache",
+            variables: { id },
+        };
+        let favorites = [];
+        await client
+            .query(query)
+            .then((res) => {
+                //esto es rediculo, esperemos que Strapi cambie su esquema de graphql de la V4
+                console.log(res.data.usersPermissionsUser.data.attributes.favorites.data)
+                //vamos a organizar los datos para usarlos rapidamente
+                res.data.usersPermissionsUser.data.attributes.favorites.data.forEach(element => {
+                    console.log(element)
+                    const recipe = {
+                        id:element.id,
+                        name:element.attributes.name,
+                        likes:element.attributes.likes,
+                        img:element.attributes.img,
+                        //en la propiedad category conservo un objeto
+                        //pero filtro las propiedades data y attributos para facil uso
+                        category:{id:element.attributes.category.data.id, 
+                        ...element.attributes.category.data.attributes},
+                        //autor 
+                        autor:element.attributes.autor.data.attributes.username
+                    }
+                    favorites.push(recipe)
+                }) 
+                // favorites = data.data.user.favorites;
+                // store.commit("user/setFavorites", favorites)
+            })
+            .catch((e) => console.log(e));
+        return { favorites };
+    },
+    ```
+
 ### 184. Store recetas favoritas
 5 min
 ### 185. Store Rectas Strapi V4
-1 min
++ store/user/actions:
+    ```js
+    export const actions = {
+        async getFavorites({commit}){
+            let client = this.app.apolloProvider.defaultClient
+            let id = this.$auth.user.id
+            const query = {
+                context:{
+                    headers:{
+                        authorization:this.$auth.strategy.token.get()
+                    }
+                },
+                query:require("../graphql/userFavorites.gql"),
+                fetchPolicy:"no-cache",
+                variables:{id}
+            }
+            await client.query(query).then(res =>{
+                const favorites = []
+                res.data.usersPermissionsUser.data.attributes.favorites.data.forEach(element => {
+                    console.log(element)
+                    const recipe = {
+                        id:element.id,
+                        name:element.attributes.name,
+                        likes:element.attributes.likes,
+                        img:element.attributes.img,
+                        //en la propiedad category conservo un objeto
+                        //pero filtro las propiedades data y attributos para facil uso
+                        category:{id:element.attributes.category.data.id, 
+                        ...element.attributes.category.data.attributes},
+                        //autor 
+                        autor:element.attributes.autor.data.attributes.username
+                    }
+                    favorites.push(recipe)
+                })
+                commit("setFavorites", favorites)
+            }).catch(e => console.log(e))
+        }
+    }
+    ```
+    + user/favorites
+    ```js
+    await client
+        .query(query)
+        .then((res) => {
+            //esto es rediculo, esperemos que Strapi cambie su esquema de graphql
+            console.log(res.data.usersPermissionsUser.data.attributes.favorites.data)
+            //vamos a organizar los datos para usarlos rapidamente
+            res.data.usersPermissionsUser.data.attributes.favorites.data.forEach(element => {
+                console.log(element)
+                const recipe = {
+                    id:element.id,
+                    name:element.attributes.name,
+                    likes:element.attributes.likes,
+                    img:element.attributes.img,
+                    //en la propiedad category conservo un objeto
+                    //pero filtro las propiedades data y attributos para facil uso
+                    category:{id:element.attributes.category.data.id, 
+                    ...element.attributes.category.data.attributes},
+                    //autor 
+                    autor:element.attributes.autor.data.attributes.username
+                }
+                favorites.push(recipe)
+            }) 
+            store.commit("user/setFavorites", favorites)
+        })
+    ```
+
 ### 186. Cargar recetas favoritas
 4 min
 ### 187. Botón like
@@ -5540,18 +7397,105 @@ query {
 6 min
 ### 189. Like de la receta parte 1
 4 min
+
 ### 190. GraphQL getLikes Strapi V4
-1 min
++ getLikes.gql
+    ```graphql
+    query($id:ID!){
+        recipe(id:$id){
+            data{
+                id
+                attributes{
+                    likes
+                }
+            }
+        }
+    }
+    ```
++ _Category/_recipe/index
+    ```js
+    likeRecipe(){
+        this.$store.commit("user/addRecipe", this.recipe)
+        let userFav = this.$store.getters['user/favoritesGQL']
+        const variables = {
+            id: this.recipe.id,
+            idUser: this.$auth.user.id,
+            favorites: userFav
+        }
+        this.$apollo.query({
+            query:require("../../../graphql/getLikes.gql"),
+            variables:{id:this.recipe.id}
+        }).then(res =>{
+            let likes = res.data.recipe.data.attributes.likes + 1
+            this.recipe.likes = likes
+            variables.likes = likes
+            this.$apollo.mutate({
+                context:{
+                    headers:{
+                        authorization: this.$auth.strategy.token.get()
+                    }
+                },
+                mutation:require("../../../graphql/updateLikes.gql"),
+                variables:variables
+            })
+        })
+    }
+    ```
+
 ### 191. Like de la receta parte 2
 5 min
 ### 192. Unlike de la receta
 3 min
+
 ### 193. Unlike recipe Strapi V4
-1 min
+    ```js
+    unlikeRecipe(){
+        this.$store.commit("user/removeRecipe", this.recipe.id)
+        let userFav = this.$store.getters['user/favoritesGQL']
+        const variables = {
+            id: this.recipe.id,
+            idUser: this.$auth.user.id,
+            favorites: userFav
+        }
+    
+        this.$apollo.query({
+            query:require("../../../graphql/getLikes.gql"),
+            variables:{id:this.recipe.id}
+        }).then(res =>{
+            let likes = res.data.recipe.data.attributes.likes - 1
+            this.recipe.likes = likes
+            variables.likes = likes
+            this.$apollo.mutate({
+            context:{
+                headers:{
+                    authorization:this.$auth.strategy.token.get()
+                }
+            },
+            mutation:require("../../../graphql/updateLikes.gql"),
+            variables:variables
+            })
+        })
+    }
+    ```
+
 ### 194. Archivos del proyecto sección 12
-1 min
++ **Respositorio**: 00recursos\Section_12_favorites
+
+
+## Sección 13: Despliegue/deployment
 ### 195. Sitios web visitados en la sección
-1 min
++ Material de apoyo:
+    + Si estas utilizando la V4 de strapi estos son los pasos a seguir (son muy similares a los del video, pero debes copiar las diferencias):
+        + https://docs-v3.strapi.io/developer-docs/latest/setup-deployment-guides/deployment/hosting-guides/heroku.html
+    + Aquí encontrarás la lista de sitios a visitar en la sección:
+        + https://strapi.io/documentation/developer-docs/latest/setup-deployment-guides/deployment/hosting-guides/heroku.html#heroku
+        + https://github.com/git-guides/install-git
+        + https://github.com/
+        + https://app.netlify.com/
+    + Otros:
+        + https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#services
+        + https://nuxtjs.org/docs/2.x/deployment/netlify-deployment
+
 ### 196. Preparación para el despliegue
 2 min
 ### 197. Strapi => Heroku
@@ -5567,11 +7511,21 @@ query {
 ### 202. Despliegue en Netfify
 3 min
 ### 203. Archivos del proyecto sección 13
-1 min
-### 204. Sección de desarrollo
-1 min
-### 205. Clase Extra
++ **Repositorio**: 00recursos\backend-recetas.zip
 
+
+## Sección 14: Nuxt 3
+### 204. Sección de desarrollo
++ Hola, Nuxt 3 en su versión beta fue lanzado el 12 de octubre del 2021.
++ Ya estoy estudiando la documentación y en los próximos meses se estarán adjuntando nuevos videos sobre:
+    + Que son las novedades.
+    + Como hacer la migración nuxt 2 => 3 con Nuxt bridge.
+    + Un pequeño ejercicio REST con firebase.
++ Estoy trabajando para darte un contenido actual y de calidad, 😊 ¡muchas gracias por tu apoyo!
+
+### 205. Clase Extra
++ No dejes de visitar nuestro catálogo de cursos donde encontrarás los mejores precios disponible todo el tiempo:
+    + https://tutorialesatualcance.com/cursos
 
 
 ## Comandos comunes:

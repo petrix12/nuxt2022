@@ -1,0 +1,16 @@
+query($id:ID!){
+    usersPermissionsUser(id:$id){
+        data{
+            attributes{
+                favorites{
+                    data{
+                        id
+                        attributes{
+                            name
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

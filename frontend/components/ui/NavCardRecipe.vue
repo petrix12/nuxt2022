@@ -11,7 +11,11 @@
         <v-img :src="recipe.attributes.img" height="170"></v-img>
         <v-card-text>
             <v-row>
-                <v-col cols="7"><h3>{{ recipe.attributes.name }}</h3></v-col>
+                <v-col cols="7">
+                    <h3>{{ recipe.attributes.name }}</h3>
+                    {{ recipe.attributes.autor.data.attributes.username }}
+                    
+                </v-col>
                 <v-col cols="5" class="d-flex justify-end">
                     <div>
                         <v-icon>mdi-heart</v-icon>
