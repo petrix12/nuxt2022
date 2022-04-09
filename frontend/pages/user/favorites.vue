@@ -7,12 +7,12 @@
         <p class="secondary--text">Tus recetas favoritas</p>
         <v-row>
             <v-col cols="4" v-for="favorite in favorites" :key="favorite.id">
-                <app-ui-nav-card-recipe :recipe="favorite"></app-ui-nav-card-recipe>
-            </v-col>
+                <app-ui-nav-card-recipe :recipe="favorite" origen='favorite'></app-ui-nav-card-recipe>
+            </v-col> 
         </v-row>
 
         <div class="mt-3">
-            <v-alert type="info" v-if="recipes.length == 0">
+            <v-alert type="info" v-if="favorites.length == 0">
                 <p>No hay recetas favoritas</p>
             </v-alert>
         </div>
@@ -44,7 +44,7 @@ export default {
         await client
             .query(query)
             .then((res) => {
-                //esto es rediculo, esperemos que Strapi cambie su esquema de graphql de la V4
+                //esto es rediculo, esperemos que Strapi cambie su esquema de graphql
                 console.log(res.data.usersPermissionsUser.data.attributes.favorites.data)
                 //vamos a organizar los datos para usarlos rapidamente
                 res.data.usersPermissionsUser.data.attributes.favorites.data.forEach(element => {
@@ -63,11 +63,10 @@ export default {
                     }
                     favorites.push(recipe)
                 }) 
-                // favorites = data.data.user.favorites;
-                // store.commit("user/setFavorites", favorites)
+                store.commit("user/setFavorites", favorites)
             })
             .catch((e) => console.log(e));
         return { favorites };
-    },
+    }
 }
 </script>

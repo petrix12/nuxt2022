@@ -7,6 +7,24 @@ query($id:ID!){
                         id
                         attributes{
                             name
+                            likes
+                            img
+                            category{
+                                data{
+                                    id
+                                    attributes{
+                                        name
+                                        slug
+                                    }
+                                }
+                            }
+                            autor{
+                                data{
+                                    attributes{
+                                        username
+                                    }
+                                }
+                            }
                         }
                     }
                 }

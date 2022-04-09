@@ -31,6 +31,16 @@
 						</v-list-item-title>
 					</v-list-item-content>
 				</v-list-item>
+				<v-list-item to="/user/favorites" v-if="$auth.loggedIn">
+					<v-list-item-icon>
+						<v-icon>mdi-heart</v-icon>
+					</v-list-item-icon>
+					<v-list-item-content>
+						<v-list-item-title>
+							Recetas favoritas
+						</v-list-item-title>
+					</v-list-item-content>
+				</v-list-item>
 			</v-list>
 		</v-navigation-drawer>
 
@@ -180,6 +190,7 @@ export default {
 		logout() {
 			this.$auth.logout()
 			this.loginmenu = false
+			this.$store.commit('user/resetFav')
 		}
 		/* test() {
 			this.$store.dispatch('snackbars/setSnack', {

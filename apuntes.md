@@ -7167,30 +7167,43 @@ query {
 ### 180. Doble mutación
 1. Crear mutation **frontend\graphql\updateLikes.gql**:
     ```graphql
-    ≡
-    ≡
+    mutation($id:ID!, $likes:Long!, $idUser:ID!, $favorites:[ID!]){
+        updateRecipe(
+            id:$id
+            data:{
+                likes:$likes
+            } 
+        ){
+            data{
+                id
+                attributes{
+                    likes
+                }
+            }
+        }
+        updateUsersPermissionsUser(
+            id:$idUser
+            data:{
+                favorites:$favorites
+            }  
+        )
+        {
+            data{
+                id
+                attributes{
+                    favorites{
+                        data{
+                            id
+                            attributes{
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     ```
-
-
-
-
-
-    ```vue
-    ≡
-    ≡
-    ```
-
-
-    ```graphql
-    ≡
-    ≡
-    ```
-
-
-
-
-
-
 
 ### 181. Doble mutation V4 Strapi
     ```graphql
@@ -7233,7 +7246,185 @@ query {
     ```
 
 ### 182. Recetas favoritas
-8 min
+1. Crear page **frontend\pages\user\favorites.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <h1 class="secondary--text">
+                Recetas favoritas
+                <v-icon large class="secondary--text">mdi-heart</v-icon>
+            </h1>
+            <p class="secondary--text">Tus recetas favoritas</p>
+            <v-row>
+                <v-col cols="4" v-for="favorite in favorites" :key="favorite.id">
+                    <app-ui-nav-card-recipe :recipe="favorite" origen='favorite'></app-ui-nav-card-recipe>
+                </v-col> 
+            </v-row>
+
+            <div class="mt-3">
+                <v-alert type="info" v-if="favorites.length == 0">
+                    <p>No hay recetas favoritas</p>
+                </v-alert>
+            </div>
+
+            <div class="mt-3">
+                <app-ui-back-btn></app-ui-back-btn>
+            </div>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        middleware: 'auth',
+        async asyncData({ app, store }) {
+            console.log("sale")
+            let client = app.apolloProvider.defaultClient;
+            let id = app.$auth.user.id;
+            let query = {
+                context: {
+                    headers: {
+                        authorization: app.$auth.strategy.token.get(),
+                    },
+                },
+                query: require("../../graphql/userFavorites.gql"),
+                fetchPolicy: "no-cache",
+                variables: { id },
+            };
+            let favorites = [];
+            await client
+                .query(query)
+                .then((res) => {
+                    //esto es rediculo, esperemos que Strapi cambie su esquema de graphql de la V4
+                    console.log(res.data.usersPermissionsUser.data.attributes.favorites.data)
+                    //vamos a organizar los datos para usarlos rapidamente
+                    res.data.usersPermissionsUser.data.attributes.favorites.data.forEach(element => {
+                        console.log(element)
+                        const recipe = {
+                            id:element.id,
+                            name:element.attributes.name,
+                            likes:element.attributes.likes,
+                            img:element.attributes.img,
+                            //en la propiedad category conservo un objeto
+                            //pero filtro las propiedades data y attributos para facil uso
+                            category:{id:element.attributes.category.data.id, 
+                            ...element.attributes.category.data.attributes},
+                            //autor 
+                            autor:element.attributes.autor.data.attributes.username
+                        }
+                        favorites.push(recipe)
+                    }) 
+                    // favorites = data.data.user.favorites;
+                    // store.commit("user/setFavorites", favorites)
+                })
+                .catch((e) => console.log(e));
+            return { favorites };
+        }
+    }
+    </script>
+    ```
+2. Modificar layout **frontend\layouts\default.vue**:
+    ```html
+    ≡
+    <v-navigation-drawer 
+        ≡
+    >
+        <v-list color="primary--text">
+            ≡
+            <v-list-item to="/user/favorites" v-if="$auth.loggedIn">
+                <v-list-item-icon>
+                    <v-icon>mdi-heart</v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                    <v-list-item-title>
+                        Recetas favoritas
+                    </v-list-item-title>
+                </v-list-item-content>
+            </v-list-item>
+        </v-list>
+    </v-navigation-drawer>
+    ≡
+    ```
+3. Modificaar query **frontend\graphql\userFavorites.gql**:
+    ```graphql
+    query($id:ID!){
+        usersPermissionsUser(id:$id){
+            data{
+                attributes{
+                    favorites{
+                        data{
+                            id
+                            attributes{
+                                name
+                                likes
+                                img
+                                category{
+                                    data{
+                                        id
+                                        attributes{
+                                            name
+                                            slug
+                                        }
+                                    }
+                                }
+                                autor{
+                                    data{
+                                        attributes{
+                                            username
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+4. Modificar componente **frontend\components\ui\NavCardRecipe.vue**:
+    ```vue
+    <template>
+        <v-card 
+            :to="{
+                name: 'category-recipe',
+                params: { 
+                    category: origen == 'favorite' ? recipe.category.slug : recipe.attributes.category.data.attributes.slug,
+                    recipe: recipe.id
+                }
+            }"
+        >
+            <v-img :src="origen == 'favorite' ? recipe.img : recipe.attributes.img" height="170"></v-img>
+            <v-card-text>
+                <v-row>
+                    <v-col cols="7">
+                        <h3>{{ origen == 'favorite' ? recipe.name : recipe.attributes.name }}</h3>
+                        {{ origen == 'favorite' ? recipe.autor : recipe.attributes.autor.data.attributes.username }}
+                        
+                    </v-col>
+                    <v-col cols="5" class="d-flex justify-end">
+                        <div>
+                            <v-icon>mdi-heart</v-icon>
+                            <span>{{ origen == 'favorite' ? recipe.likes : recipe.attributes.likes }}</span>
+                        </div>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+    </template>
+
+    <script>
+    export default {
+        props: {
+            recipe: {
+                type: Object,
+                required: true
+            },
+            origen: null
+        }
+    }
+    </script>
+    ```
+
 ### 183. Modificaciones Strapi V4
 + userFavorites.gql
     ```graphql
@@ -7320,7 +7511,63 @@ query {
     ```
 
 ### 184. Store recetas favoritas
-5 min
+1. Crear store **frontend\store\user.js**:
+    ```js
+    export const state = () => ({
+        favorites: null
+    })
+
+
+    export const getters = {
+        favorites(state){
+            return state.favorites
+        }
+    }
+
+    export const mutations = {
+        setFavorites(state, payload){
+            state.favorites = payload
+        }
+    }
+
+    export const actions = {
+        async getFavorites({commit}){
+            let client = this.app.apolloProvider.defaultClient
+            let id = this.$auth.user.id
+            const query = {
+                context:{
+                    headers:{
+                        authorization:this.$auth.strategy.token.get()
+                    }
+                },
+                query:require("../graphql/userFavorites.gql"),
+                fetchPolicy:"no-cache",
+                variables:{id}
+            }
+            await client.query(query).then(res =>{
+                const favorites = []
+                res.data.usersPermissionsUser.data.attributes.favorites.data.forEach(element => {
+                    console.log(element)
+                    const recipe = {
+                        id:element.id,
+                        name:element.attributes.name,
+                        likes:element.attributes.likes,
+                        img:element.attributes.img,
+                        //en la propiedad category conservo un objeto
+                        //pero filtro las propiedades data y attributos para facil uso
+                        category:{id:element.attributes.category.data.id, 
+                        ...element.attributes.category.data.attributes},
+                        //autor 
+                        autor:element.attributes.autor.data.attributes.username
+                    }
+                    favorites.push(recipe)
+                })
+                commit("setFavorites", favorites)
+            }).catch(e => console.log(e))
+        }
+    }
+    ```
+
 ### 185. Store Rectas Strapi V4
 + store/user/actions:
     ```js
@@ -7390,13 +7637,461 @@ query {
     ```
 
 ### 186. Cargar recetas favoritas
-4 min
+1. Modificar page **frontend\pages\user\favorites.vue**:
+    ```vue
+    <template>
+        <v-container>
+            <h1 class="secondary--text">
+                Recetas favoritas
+                <v-icon large class="secondary--text">mdi-heart</v-icon>
+            </h1>
+            <p class="secondary--text">Tus recetas favoritas</p>
+            <v-row>
+                <v-col cols="4" v-for="favorite in favorites" :key="favorite.id">
+                    <app-ui-nav-card-recipe :recipe="favorite" origen='favorite'></app-ui-nav-card-recipe>
+                </v-col> 
+            </v-row>
+
+            <div class="mt-3">
+                <v-alert type="info" v-if="favorites.length == 0">
+                    <p>No hay recetas favoritas</p>
+                </v-alert>
+            </div>
+
+            <div class="mt-3">
+                <app-ui-back-btn></app-ui-back-btn>
+            </div>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        middleware: 'auth',
+        async asyncData({ app, store }) {
+            console.log("sale")
+            let client = app.apolloProvider.defaultClient;
+            let id = app.$auth.user.id;
+            let query = {
+                context: {
+                    headers: {
+                        authorization: app.$auth.strategy.token.get(),
+                    },
+                },
+                query: require("../../graphql/userFavorites.gql"),
+                fetchPolicy: "no-cache",
+                variables: { id },
+            };
+            let favorites = [];
+            await client
+                .query(query)
+                .then((res) => {
+                    //esto es rediculo, esperemos que Strapi cambie su esquema de graphql
+                    console.log(res.data.usersPermissionsUser.data.attributes.favorites.data)
+                    //vamos a organizar los datos para usarlos rapidamente
+                    res.data.usersPermissionsUser.data.attributes.favorites.data.forEach(element => {
+                        console.log(element)
+                        const recipe = {
+                            id:element.id,
+                            name:element.attributes.name,
+                            likes:element.attributes.likes,
+                            img:element.attributes.img,
+                            //en la propiedad category conservo un objeto
+                            //pero filtro las propiedades data y attributos para facil uso
+                            category:{id:element.attributes.category.data.id, 
+                            ...element.attributes.category.data.attributes},
+                            //autor 
+                            autor:element.attributes.autor.data.attributes.username
+                        }
+                        favorites.push(recipe)
+                    }) 
+                    store.commit("user/setFavorites", favorites)
+                })
+                .catch((e) => console.log(e));
+            return { favorites };
+        }
+    }
+    </script>
+    ```
+2. Modificar page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            {{ userFavorites }}
+            <h1 class="secondary--text">{{ recipe.attributes.name }}</h1>
+            <h5 class="secondary--text">{{ recipe.attributes.category.data.attributes.name }}</h5>
+
+            <v-card class="mt-3">
+                <v-card-title>
+                    <v-icon class="mr-3">mdi-information</v-icon>
+                    Información
+                </v-card-title>
+                <v-card-text class="black--text">
+                    <v-row>
+                        <v-col cols="6">
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-account-group</v-icon>
+                                Servicios :  {{ recipe.attributes.servings }}
+                            </v-chip>
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-clock</v-icon>
+                                Tiempo :  {{ formatedTime }}
+                            </v-chip>
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-account-edit</v-icon>
+                                Autor: {{ recipe.attributes.autor.data.attributes.username }}
+                            </v-chip>
+
+                            <v-divider class="my-3"></v-divider>
+
+                            <h4 class="body-1">Descripción</h4>
+                            <div v-html="recipe.description"></div>
+                        </v-col>
+                        <v-col cols="6">
+                            <v-img :src="recipe.attributes.img" max-height="500"></v-img>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+            </v-card>
+
+            <div class="mt-3">
+            <v-row>
+                <v-col cols="5">
+                    <v-card>
+                        <v-card-title>
+                            <v-icon class="mr-3">mdi-fridge</v-icon>
+                            Ingredientes
+                        </v-card-title>
+                        <v-list>
+                            <v-list-item v-for="(ingredient,i) in recipe.attributes.ingredients" :key="i">
+                                {{ ingredient }}
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                </v-col>
+                <v-col cols="7">
+                <v-card>
+                    <v-card-title>
+                        <v-icon class="mr-3">mdi-stove</v-icon>
+                        Pasos
+                    </v-card-title>
+                    <v-timeline dense>
+                        <v-timeline-item v-for="(step,k) in recipe.attributes.steps" :key="k+Math.random()" color="secondary" small>
+                            {{ step }}
+                        </v-timeline-item>
+                    </v-timeline>
+                </v-card>
+                </v-col>
+            </v-row>
+            </div>
+            <div class="mt-3">
+                <app-ui-back-btn label="Volver a recetas"></app-ui-back-btn>
+            </div>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        computed: {
+            formatedTime() {
+                let hours = Math.floor(this.recipe.attributes.duration / 60)
+                let minutes = this.recipe.attributes.duration % 60
+                let total = ("0" + hours).slice(-2) + ':' + ("0" + minutes).slice(-2)
+                return total
+            },
+            userFavorites(){
+                return this.$store.getters['user/favorites']
+            },
+        },
+        async asyncData({app, route}){
+            const client = app.apolloProvider.defaultClient
+            const id = route.params.recipe
+            const query = {
+                query: require('../../../graphql/recipe.gql'),
+                variables: {id}
+            }
+            let recipe = null
+            await client.query(query).then(data => {
+                recipe = data.data.recipe.data
+            }).catch(e => console.log(e))
+            return {recipe}
+        },
+        async mounted() {
+            if(this.$auth.loggedIn && this.$store.getters['user/favorites'] == null){
+                console.log('call favorites')
+                await this.$store.dispatch('user/getFavorites')
+            }
+        }
+    }
+    </script>
+    ```
+
 ### 187. Botón like
-5 min
+1. Modificar page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            {{ userFavorites }}
+            {{ recipeIsLiked }}
+            <h1 class="secondary--text">{{ recipe.attributes.name }}</h1>
+            <h5 class="secondary--text">{{ recipe.attributes.category.data.attributes.name }}</h5>
+
+            <v-card class="mt-3">
+                <v-card-title>
+                    <v-icon class="mr-3">mdi-information</v-icon>
+                    Información
+                </v-card-title>
+                <v-card-text class="black--text">
+                    <v-row>
+                        <v-col cols="6">
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-account-group</v-icon>
+                                Servicios :  {{ recipe.attributes.servings }}
+                            </v-chip>
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-clock</v-icon>
+                                Tiempo :  {{ formatedTime }}
+                            </v-chip>
+                            <v-chip color="primary" outlined>
+                                <v-icon left>mdi-account-edit</v-icon>
+                                Autor: {{ recipe.attributes.autor.data.attributes.username }}
+                            </v-chip>
+
+                            <v-divider class="my-3"></v-divider>
+
+                            <h4 class="body-1">Descripción</h4>
+                            <div v-html="recipe.description"></div>
+                        </v-col>
+                        <v-col cols="6">
+                            <v-img :src="recipe.attributes.img" max-height="500"></v-img>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn icon v-if="$auth.loggedIn" large>
+                        <v-icon :color="recipeIsLiked ? 'error' : 'grey'" large>mdi-heart</v-icon>
+                    </v-btn>
+                    <v-icon v-else class="mr-3">mdi-heart</v-icon>
+                    <span class="overline">Likes {{ recipe.attributes.likes }}</span>
+                </v-card-actions>
+            </v-card>
+
+            <div class="mt-3">
+            <v-row>
+                <v-col cols="5">
+                    <v-card>
+                        <v-card-title>
+                            <v-icon class="mr-3">mdi-fridge</v-icon>
+                            Ingredientes
+                        </v-card-title>
+                        <v-list>
+                            <v-list-item v-for="(ingredient,i) in recipe.attributes.ingredients" :key="i">
+                                {{ ingredient }}
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                </v-col>
+                <v-col cols="7">
+                <v-card>
+                    <v-card-title>
+                        <v-icon class="mr-3">mdi-stove</v-icon>
+                        Pasos
+                    </v-card-title>
+                    <v-timeline dense>
+                        <v-timeline-item v-for="(step,k) in recipe.attributes.steps" :key="k+Math.random()" color="secondary" small>
+                            {{ step }}
+                        </v-timeline-item>
+                    </v-timeline>
+                </v-card>
+                </v-col>
+            </v-row>
+            </div>
+            <div class="mt-3">
+                <app-ui-back-btn label="Volver a recetas"></app-ui-back-btn>
+            </div>
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        computed: {
+            formatedTime() {
+                let hours = Math.floor(this.recipe.attributes.duration / 60)
+                let minutes = this.recipe.attributes.duration % 60
+                let total = ("0" + hours).slice(-2) + ':' + ("0" + minutes).slice(-2)
+                return total
+            },
+            userFavorites(){
+                return this.$store.getters['user/favorites']
+            },
+            recipeIsLiked() {
+                let liked = false
+                if(this.userFavorites){
+                    const id = this.recipe.id
+                    liked = this.userFavorites.some((fav) => fav.id === id)
+                }
+                return liked
+            }
+        },
+        async asyncData({app, route}){
+            const client = app.apolloProvider.defaultClient
+            const id = route.params.recipe
+            const query = {
+                query: require('../../../graphql/recipe.gql'),
+                variables: {id}
+            }
+            let recipe = null
+            await client.query(query).then(data => {
+                recipe = data.data.recipe.data
+            }).catch(e => console.log(e))
+            return {recipe}
+        },
+        async mounted() {
+            if(this.$auth.loggedIn && this.$store.getters['user/favorites'] == null){
+                console.log('call favorites')
+                await this.$store.dispatch('user/getFavorites')
+            }
+        }
+    }
+    </script>
+    ```
+ 
 ### 188. Añadir y remover recetas del store
-6 min
+1. Modificar page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```vue
+    <template>
+        <v-container>
+            {{ userFavorites }}
+            {{ recipeIsLiked }}
+            <h1 class="secondary--text">{{ recipe.attributes.name }}</h1>
+            <h5 class="secondary--text">{{ recipe.attributes.category.data.attributes.name }}</h5>
+
+            <v-card class="mt-3">
+                ≡
+                <v-card-actions>
+                    <v-btn icon v-if="$auth.loggedIn" large @click="toggleLiked()">
+                        <v-icon :color="recipeIsLiked ? 'error' : 'grey'" large>mdi-heart</v-icon>
+                    </v-btn>
+                    <v-icon v-else class="mr-3">mdi-heart</v-icon>
+                    <span class="overline">Likes {{ recipe.attributes.likes }}</span>
+                </v-card-actions>
+            </v-card>
+
+            ≡
+        </v-container>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                likedRecipe: false
+            }
+        }, 
+        computed: {
+            formatedTime() {
+                let hours = Math.floor(this.recipe.attributes.duration / 60)
+                let minutes = this.recipe.attributes.duration % 60
+                let total = ("0" + hours).slice(-2) + ':' + ("0" + minutes).slice(-2)
+                return total
+            },
+            userFavorites(){
+                return this.$store.getters['user/favorites']
+            },
+            recipeIsLiked() {
+                let liked = false
+                if(this.userFavorites){
+                    const id = this.recipe.id
+                    liked = this.userFavorites.some((fav) => fav.id === id)
+                }
+                this.likedRecipe = liked
+                return liked
+            }
+        },
+        methods: {
+            toggleLiked() {
+                this.likedRecipe = !this.likedRecipe
+                if(this.likedRecipe){
+                    this.likeRecipe()
+                } else {
+                    this.unlikeRecipe()
+                }
+            },
+            likeRecipe(){
+                this.$store.commit('user/addRecipe', this.recipe)
+            },
+            unlikeRecipe(){
+                this.$store.commit('user/removeRecipe', this.recipe.id)
+            }
+        },
+        ≡
+    }
+    </script>
+    ```
+2. Modificar store **frontend\store\user.js**:
+    ```js
+    ≡
+    export const mutations = {
+        setFavorites(state, payload){
+            state.favorites = payload
+        },
+        addRecipe(state, payload){
+            state.favorites.push(payload)
+        },
+        removeRecipe(state, id){
+            const miRecipe = state.favorites.find(recipe => recipe.id == id)
+            const index = state.favorites.indexOf(miRecipe)
+            state.favorites.splice(index, 1)
+        }
+    }
+    ≡
+    ```
+
 ### 189. Like de la receta parte 1
-4 min
+1. Crear query **frontend\graphql\getLikes.gql**:
+    ```graphql
+    query($id:ID!){
+        recipe(id:$id){
+            data{
+                id
+                attributes{
+                    likes
+                }
+            }
+        }
+    }
+    ```
+2. Modificar page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```js
+    ≡
+    likeRecipe(){
+        this.$store.commit("user/addRecipe", this.recipe)
+        let userFav = this.$store.getters['user/favoritesGQL']
+        const variables = {
+            id: this.recipe.id,
+            idUser: this.$auth.user.id,
+            favorites: userFav
+        }
+        this.$apollo.query({
+            query:require("../../../graphql/getLikes.gql"),
+            variables:{id:this.recipe.id}
+        }).then(res =>{
+            let likes = res.data.recipe.data.attributes.likes + 1
+            // let likes = res.data.recipe.like + 1
+            this.recipe.likes = likes
+            variables.likes = likes
+            this.$apollo.mutate({
+                context: {
+                    headers: {
+                        authorization: this.$auth.strategy.token.get()
+                    }
+                },
+                mutation: require("../../../graphql/updateLikes.gql"),
+                variables: variables
+            })
+        })
+    },
+    ≡
+    ```
 
 ### 190. GraphQL getLikes Strapi V4
 + getLikes.gql
@@ -7443,9 +8138,72 @@ query {
     ```
 
 ### 191. Like de la receta parte 2
-5 min
+1. Modificar store **frontend\store\user.js**:
+    ```js
+    ≡
+    export const getters = {
+        ≡
+        favoritesGQL(state){
+            let favorites = []
+            if(Array.isArray(state.favorites)){
+                favorites = state.favorites.map(fav => fav.id)
+            }
+            return favorites
+        }
+    }
+
+    export const mutations = {
+        ≡
+        resetFav(state){
+            state.favorites = null
+        }
+    }
+    ≡
+    ```
+
 ### 192. Unlike de la receta
-3 min
+1. Modificar page **frontend\pages\\_category\\_recipe\index.vue**:
+    ```js
+    ≡
+    unlikeRecipe(){
+        this.$store.commit("user/removeRecipe", this.recipe.id)
+        let userFav = this.$store.getters['user/favoritesGQL']
+        const variables = {
+            id: this.recipe.id,
+            idUser: this.$auth.user.id,
+            favorites: userFav
+        }
+    
+        this.$apollo.query({
+            query:require("../../../graphql/getLikes.gql"),
+            variables:{id:this.recipe.id}
+        }).then(res =>{
+            let likes = res.data.recipe.data.attributes.likes - 1
+            this.recipe.likes = likes
+            variables.likes = likes
+            this.$apollo.mutate({
+                context:{
+                    headers:{
+                        authorization:this.$auth.strategy.token.get()
+                    }
+                },
+                mutation:require("../../../graphql/updateLikes.gql"),
+                variables:variables
+            })
+        })
+    }
+    ≡
+    ```
+2. Modificar layout **frontend\layouts\default.vue**:
+    ```js
+    ≡
+    logout() {
+        this.$auth.logout()
+        this.loginmenu = false
+        this.$store.commit('user/resetFav')
+    }
+    ≡
+    ```
 
 ### 193. Unlike recipe Strapi V4
     ```js
@@ -7498,6 +8256,29 @@ query {
 
 ### 196. Preparación para el despliegue
 2 min
+
+
+
+
+
+    ```vue
+    ≡
+    ≡
+    ```
+
+
+    ```graphql
+    ≡
+    ≡
+    ```
+
+
+
+
+
+
+
+
 ### 197. Strapi => Heroku
 8 min
 ### 198. Modificar permisos y autorizaciones

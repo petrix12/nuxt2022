@@ -1,5 +1,7 @@
 <template>
     <v-container>
+        {{ userFavorites }}
+        {{ recipeIsLiked }}
         <h1 class="secondary--text">{{ recipe.attributes.name }}</h1>
         <h5 class="secondary--text">{{ recipe.attributes.category.data.attributes.name }}</h5>
 
@@ -34,37 +36,44 @@
                     </v-col>
                 </v-row>
             </v-card-text>
+            <v-card-actions>
+                <v-btn icon v-if="$auth.loggedIn" large @click="toggleLiked()">
+                    <v-icon :color="recipeIsLiked ? 'error' : 'grey'" large>mdi-heart</v-icon>
+                </v-btn>
+                <v-icon v-else class="mr-3">mdi-heart</v-icon>
+                <span class="overline">Likes {{ recipe.attributes.likes }}</span>
+            </v-card-actions>
         </v-card>
 
         <div class="mt-3">
-        <v-row>
-            <v-col cols="5">
+            <v-row>
+                <v-col cols="5">
+                    <v-card>
+                        <v-card-title>
+                            <v-icon class="mr-3">mdi-fridge</v-icon>
+                            Ingredientes
+                        </v-card-title>
+                        <v-list>
+                            <v-list-item v-for="(ingredient,i) in recipe.attributes.ingredients" :key="i">
+                                {{ ingredient }}
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                </v-col>
+                <v-col cols="7">
                 <v-card>
                     <v-card-title>
-                        <v-icon class="mr-3">mdi-fridge</v-icon>
-                        Ingredientes
+                        <v-icon class="mr-3">mdi-stove</v-icon>
+                        Pasos
                     </v-card-title>
-                    <v-list>
-                        <v-list-item v-for="(ingredient,i) in recipe.attributes.ingredients" :key="i">
-                            {{ ingredient }}
-                        </v-list-item>
-                    </v-list>
+                    <v-timeline dense>
+                        <v-timeline-item v-for="(step,k) in recipe.attributes.steps" :key="k+Math.random()" color="secondary" small>
+                            {{ step }}
+                        </v-timeline-item>
+                    </v-timeline>
                 </v-card>
-            </v-col>
-            <v-col cols="7">
-            <v-card>
-                <v-card-title>
-                    <v-icon class="mr-3">mdi-stove</v-icon>
-                    Pasos
-                </v-card-title>
-                <v-timeline dense>
-                    <v-timeline-item v-for="(step,k) in recipe.attributes.steps" :key="k+Math.random()" color="secondary" small>
-                        {{ step }}
-                    </v-timeline-item>
-                </v-timeline>
-            </v-card>
-            </v-col>
-        </v-row>
+                </v-col>
+            </v-row>
         </div>
         <div class="mt-3">
             <app-ui-back-btn label="Volver a recetas"></app-ui-back-btn>
@@ -74,12 +83,93 @@
 
 <script>
 export default {
+    data() {
+        return {
+            likedRecipe: false
+        }
+    }, 
     computed: {
         formatedTime() {
             let hours = Math.floor(this.recipe.attributes.duration / 60)
             let minutes = this.recipe.attributes.duration % 60
             let total = ("0" + hours).slice(-2) + ':' + ("0" + minutes).slice(-2)
             return total
+        },
+        userFavorites(){
+            return this.$store.getters['user/favorites']
+        },
+        recipeIsLiked() {
+            let liked = false
+            if(this.userFavorites){
+                const id = this.recipe.id
+                liked = this.userFavorites.some((fav) => fav.id === id)
+            }
+            this.likedRecipe = liked
+            return liked
+        }
+    },
+    methods: {
+        toggleLiked() {
+            this.likedRecipe = !this.likedRecipe
+            if(this.likedRecipe){
+                this.likeRecipe()
+            } else {
+                this.unlikeRecipe()
+            }
+        },
+        likeRecipe(){
+            this.$store.commit("user/addRecipe", this.recipe)
+            let userFav = this.$store.getters['user/favoritesGQL']
+            const variables = {
+                id: this.recipe.id,
+                idUser: this.$auth.user.id,
+                favorites: userFav
+            }
+            this.$apollo.query({
+                query:require("../../../graphql/getLikes.gql"),
+                variables:{id:this.recipe.id}
+            }).then(res =>{
+                let likes = res.data.recipe.data.attributes.likes + 1
+                // let likes = res.data.recipe.like + 1
+                this.recipe.likes = likes
+                variables.likes = likes
+                this.$apollo.mutate({
+                    context: {
+                        headers: {
+                            authorization: this.$auth.strategy.token.get()
+                        }
+                    },
+                    mutation: require("../../../graphql/updateLikes.gql"),
+                    variables: variables
+                })
+            })
+        },
+        unlikeRecipe(){
+            this.$store.commit("user/removeRecipe", this.recipe.id)
+            let userFav = this.$store.getters['user/favoritesGQL']
+            const variables = {
+                id: this.recipe.id,
+                idUser: this.$auth.user.id,
+                favorites: userFav
+            }
+        
+            this.$apollo.query({
+                query:require("../../../graphql/getLikes.gql"),
+                variables:{id:this.recipe.id}
+            }).then(res =>{
+                let likes = res.data.recipe.data.attributes.likes - 1
+                this.recipe.likes = likes
+                variables.likes = likes
+                this.$apollo.mutate({
+                    context:{
+                        headers:{
+                            authorization:this.$auth.strategy.token.get()
+                        }
+                    },
+                    mutation:require("../../../graphql/updateLikes.gql"),
+                    variables:variables
+                })
+            })
         }
     },
     async asyncData({app, route}){
@@ -94,6 +184,12 @@ export default {
             recipe = data.data.recipe.data
         }).catch(e => console.log(e))
         return {recipe}
+    },
+    async mounted() {
+        if(this.$auth.loggedIn && this.$store.getters['user/favorites'] == null){
+            console.log('call favorites')
+            await this.$store.dispatch('user/getFavorites')
+        }
     }
 }
 </script>
