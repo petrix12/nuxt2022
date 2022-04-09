@@ -8255,42 +8255,85 @@ query {
         + https://nuxtjs.org/docs/2.x/deployment/netlify-deployment
 
 ### 196. Preparación para el despliegue
-2 min
-
-
-
-
-
-    ```vue
-    ≡
-    ≡
-    ```
-
-
-    ```graphql
-    ≡
-    ≡
-    ```
-
-
-
-
-
-
-
+1. Instalar [Git](https://git-scm.com/downloads).
+2. Abrir cuenta en [Heroku](https://www.heroku.com).
+3. Abrir cuenta en [GitHub](https://github.com).
+4. Instalar [Heroku CLI](https://cli-assets.heroku.com/heroku-x64.exe).
 
 ### 197. Strapi => Heroku
-8 min
++ https://docs.strapi.io/developer-docs/latest/setup-deployment-guides/deployment/hosting-guides/heroku.html#heroku-install-requirements
+1. Modificar **backend\\.gitignore**:
+    ```gitignore
+    ≡
+    package-lock.json
+    ```
+2. Ejecutar en la raíz del proyecto **backend**:
+    + $ heroku login
+        + Luego seguir los pasos para iniciar sesión con tu cuenta de Heroku.
+    + $ git init
+    + $ git add .
+    + $ git commit -m "Initial Commit"
+    + $ heroku create recetas-spp
+    + $ heroku addons:create heroku-postgresql:hobby-dev
+    + $ heroku config
+        + Recuperar conexión de la BD:
+            + DATABASE_URL: postgres://pvqgaquevtyuuv:ebd0db3f7eed149f5c8610cad34a02d5f8b93715ebdaf3e4a4e62d208445e06a@ec2-3-230-122-20.compute-1.amazonaws.com:5432/d3v43e8jc58c3h
+    + $ npm install pg-connection-string --save
+    + Crear archivo de configuración de BD **backend\config\config\env\production\database.js**:
+        ```js
+        const parse = require('pg-connection-string').parse;
+        const config = parse(process.env.DATABASE_URL);
+
+        module.exports = ({ env }) => ({
+            connection: {
+                client: 'postgres',
+                connection: {
+                    host: config.host,
+                    port: config.port,
+                    database: config.database,
+                    user: config.user,
+                    password: config.password,
+                    ssl: {
+                        rejectUnauthorized: false
+                    },
+                },
+                debug: false,
+            },
+        });
+        ```
+    + $ heroku config:set NODE_ENV=production
+    + Crear archivo de configuración de servidor **backend\config\env\production\server.js**:
+        ```js
+    module.exports = ({ env }) => ({
+        url: env('MY_HEROKU_URL'),
+    });
+        ```
+    + $ heroku config:set MY_HEROKU_URL=$(heroku info -s | grep web_url | cut -d= -f2)
+        + **Nota**: da un error con respecto a **grep**, pero continuar con el proceso.
+    + $ npm install pg --save
+    + $ git add .
+    + $ git commit -m "Update database config"
+    + $ git push heroku HEAD:main
+    + $ heroku open
+3. Registrar usuario para administrar Backend:
+    + URL: https://recetas-spp.herokuapp.com/admin
++ **Nota**: se presentaron problemas al intentar realizar el deploy.
+
 ### 198. Modificar permisos y autorizaciones
-1 min
+1. Sobre configurar los roles y permisos en el backend.
+
 ### 199. Importar categorías (video opcional)
-6 min
+1. Sobre importar categorías a Heroku.
+
 ### 200. Importar recetas (video opcional)
-7 min
+1. Sobre importar recetas a Heroku.
+
 ### 201. Crear repositorio GitHub
-4 min
-### 202. Despliegue en Netfify
-3 min
+1. Sobre crear repositorio **frontend** en GitHub.
+
+### 202. Despliegue en Netlify
+1. Sobre deploy del proyecto **frontend** en Netlify.
+
 ### 203. Archivos del proyecto sección 13
 + **Repositorio**: 00recursos\backend-recetas.zip
 
